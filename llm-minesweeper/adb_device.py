@@ -167,26 +167,34 @@ class ADBDevice:
             print(f"Failed to capture screenshot: {exc}")
             raise
 
-    def tap(self, x: int, y: int) -> None:
+    def tap(self, x: int, y: int, reason: Optional[str] = None) -> None:
         """Performs a tap gesture at the given coordinates.
 
         Args:
             x: X screen coordinate.
             y: Y screen coordinate.
+            reason: Optional explanation for why you chose this action.
         """
         print(f"Tapping screen at ({x}, {y})")
+        if reason:
+            print(f"Reason: {reason}")
+
         self._run_adb_cmd(["shell", "input", "tap", str(x), str(y)])
         time.sleep(1)  # Let the app react
 
-    def long_press(self, x: int, y: int, duration_ms: int = 500) -> None:
+    def long_press(self, x: int, y: int, duration_ms: int = 500, reason: Optional[str] = None) -> None:
         """Performs a long press gesture at the given coordinates.
 
         Args:
             x: X screen coordinate.
             y: Y screen coordinate.
             duration_ms: Duration of press in milliseconds.
+            reason: Optional explanation for why you chose this action.
         """
         print(f"Long-pressing screen at ({x}, {y}) for {duration_ms}ms")
+        if reason:
+            print(f"Reason: {reason}")
+
         # Swipe from (x, y) to (x, y) performs a long press
         self._run_adb_cmd(
             [
@@ -227,25 +235,31 @@ class ADBDevice:
         )
         time.sleep(1)
 
-    def zoom_in(self) -> None:
+    def zoom_in(self, reason: Optional[str] = None) -> None:
         """Simulates a pinch-out gesture to zoom in on the board."""
         if self.u2_device is None:
             print("Error: uiautomator2 device not initialized. Cannot perform zoom.")
             return
 
         print("Executing Zoom In (Pinch Out)...")
+        if reason:
+            print(f"Reason: {reason}")
+
         self.u2_device(className="android.widget.FrameLayout").pinch_out(
             percent=100, steps=15
         )
         time.sleep(1.5)
 
-    def zoom_out(self) -> None:
+    def zoom_out(self, reason: Optional[str] = None) -> None:
         """Simulates a pinch-in gesture to zoom out on the board."""
         if self.u2_device is None:
             print("Error: uiautomator2 device not initialized. Cannot perform zoom.")
             return
 
         print("Executing Zoom Out (Pinch In)...")
+        if reason:
+            print(f"Reason: {reason}")
+
         self.u2_device(className="android.widget.FrameLayout").pinch_in(
             percent=100, steps=15
         )

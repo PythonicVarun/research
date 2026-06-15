@@ -35,7 +35,8 @@ class SingleModelSolver:
                         "type": "object",
                         "properties": {
                             "x": {"type": "integer", "description": "The X coordinate in pixels."},
-                            "y": {"type": "integer", "description": "The Y coordinate in pixels."}
+                            "y": {"type": "integer", "description": "The Y coordinate in pixels."},
+                            "reason": {"type": "string", "description": "Optional explanation for why you chose this action."}
                         },
                         "required": ["x", "y"]
                     }
@@ -51,7 +52,8 @@ class SingleModelSolver:
                         "properties": {
                             "x": {"type": "integer", "description": "The X coordinate in pixels."},
                             "y": {"type": "integer", "description": "The Y coordinate in pixels."},
-                            "duration_ms": {"type": "integer", "description": "Duration of press in milliseconds.", "default": 500}
+                            "duration_ms": {"type": "integer", "description": "Duration of press in milliseconds.", "default": 500},
+                            "reason": {"type": "string", "description": "Optional explanation for why you chose this action."}
                         },
                         "required": ["x", "y"]
                     }
@@ -64,7 +66,9 @@ class SingleModelSolver:
                     "description": "Zoom in on the board.",
                     "parameters": {
                         "type": "object",
-                        "properties": {}
+                        "properties": {
+                            "reason": {"type": "string", "description": "Optional explanation for why you chose this action."}
+                        }
                     }
                 }
             },
@@ -75,7 +79,9 @@ class SingleModelSolver:
                     "description": "Zoom out on the board.",
                     "parameters": {
                         "type": "object",
-                        "properties": {}
+                        "properties": {
+                            "reason": {"type": "string", "description": "Optional explanation for why you chose this action."}
+                        }
                     }
                 }
             }
