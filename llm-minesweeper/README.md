@@ -4,7 +4,7 @@ This benchmark harness evaluates a Large Language Model's capability to play Min
 
 The system leverages:
 
-1. **Gemini 3.1 Pro (via OpenAI-compatible API)** as a unified **Solver Agent** to analyze grid-overlaid screenshots, reason about game state, and output action decisions (DIG, FLAG, ZOOM_IN, ZOOM_OUT, etc.) in a single call.
+1. **Gemini 3.1 Pro (via OpenAI-compatible API)** as an autonomous agent playing Minesweeper using tool calling (tap, long_press, zoom_in, zoom_out) without any hardcoded logic or coordinate assumptions.
 2. **Pillow** to pre-process screenshots, drawing a coordinate grid over them to eliminate LLM coordinate hallucinations.
 3. **ADB (Android Debug Bridge)** and **`uiautomator2`** to interact with the device.
 
@@ -25,13 +25,12 @@ sequenceDiagram
         H->>D: Capture Screenshot (adb exec-out)
         D-->>H: Save PNG locally
         H->>H: Generate Coordinate Grid Overlay (image_utils.py)
-        H->>S: Pass Grid PNG path
-        S->>S: Encode to base64
-        S->>S: Request Decision via Gemini 3.1 Pro (OpenAI vision API)
-        S-->>H: Return Move and State JSON (action, mode, coordinates)
-        H->>D: Execute Action via ADB / uiautomator2
-        Note over H,D: Handle mode switches (DIG <-> FLAG) using layout scaling
-        H->>H: Log Step details (screenshot, state, move)
+        H->>S: Request Next Action (pass chat history with latest Grid PNG)
+        S->>S: Decide tool call (tap, long_press, zoom_in, zoom_out)
+        S-->>H: Return tool call (with target coordinates or zoom request)
+        H->>D: Execute tool call on device
+        H->>S: Add tool execution result to chat history
+        H->>H: Log step message history (JSON)
         H->>H: Wait 2.0s for animations
     end
 ```
@@ -40,10 +39,10 @@ sequenceDiagram
 
 ## Architecture and Components
 
-- [harness.py](file:///V:/Codes/research/llm-minesweeper/harness.py): The main loop that captures screenshots, triggers the coordinate grid generation, requests solver moves, and executes tap actions.
-- [image_utils.py](file:///V:/Codes/research/llm-minesweeper/image_utils.py): Grid overlay utility that overlays a 100px red axis grid and 200px intersection coordinate markers onto the screenshots.
-- [single_solver.py](file:///V:/Codes/research/llm-minesweeper/single_solver.py): Connects to the vision endpoint to perform logical deductions and output move decisions in a single JSON schema.
-- [adb_device.py](file:///V:/Codes/research/llm-minesweeper/adb_device.py): Wraps ADB and `uiautomator2` to handle screen captures, tap actions, mode switches using layout scaling, and multi-touch zoom gestures.
+- [harness.py](harness.py): The main loop that captures screenshots, triggers the coordinate grid generation, executes tool actions on the device, and manages the run lifecycle.
+- [image_utils.py](image_utils.py): Grid overlay utility that overlays a 100px red axis grid and 200px intersection coordinate markers onto the screenshots.
+- [single_solver.py](single_solver.py): Manages the message history, registers tools (tap, long_press, zoom_in, zoom_out), and requests actions from the LLM.
+- [adb_device.py](adb_device.py): Wraps ADB and `uiautomator2` to handle screen captures, tap actions, long press gestures, and multi-touch zoom gestures.
 
 ---
 
@@ -98,8 +97,19 @@ Fill in the following details in `.env`:
     - Identify your connected device.
     - Start a benchmark run under `runs/run_<timestamp>/`.
     - Take screenshots at each step and overlay the coordinate grid.
-    - Call the unified Solver LLM to deduce the board logic and choose an action.
-    - Execute the action (automatically handling mode switches using layout scaling) and log the results.
+    - Call the Solver LLM, which uses direct tool calls (`tap`, `long_press`, `zoom_in`, `zoom_out`) to play the game.
+    - Prune past screenshot images dynamically to keep context optimized and avoid API rate limits.
+
+### Manual Tool Testing CLI
+
+You can manually test tool calls and inspect coordinate grid overlays using the interactive CLI tester:
+1. Run the CLI:
+   ```powershell
+   python cli_tester.py
+   ```
+2. The CLI will autoconnect to your device and take an initial grid-overlaid screenshot at `runs/cli_test/cli_step_0.png`.
+3. Enter interactive commands (such as `tap 500 1200`, `long_press 300 500`, `zoom_in`, `zoom_out`, or `screenshot`) to perform actions on the screen.
+4. After each action, the CLI will capture a new screenshot, apply the coordinate grid overlay, and save it to the `runs/cli_test/` directory, printing the file path so you can verify coordinates and game response.
 
 ---
 
@@ -109,4 +119,4 @@ Each run creates a dedicated folder under `runs/run_<timestamp>/` containing:
 
 - `step_{N}_screenshot.png`: The raw device screen.
 - `step_{N}_screenshot_grid.png`: The screenshot with the coordinate grid overlay analyzed by the LLM.
-- `step_{N}_move.json` / `step_{N}_state.json`: The complete decision, parsed game state, reasoning, and target coordinates.
+- `step_{N}_messages.json`: The complete chat messages history at that step, including system prompt, assistant tool calls, tool results, and the latest screenshot.

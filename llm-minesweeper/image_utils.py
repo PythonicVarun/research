@@ -51,8 +51,8 @@ def add_coordinate_grid(image_path: Path) -> Path:
         draw.text((10, y + 3), str(y), fill=text_color, font=font)
         draw.text((w - 50, y + 3), str(y), fill=text_color, font=font)
 
-    # 3. Draw intersection coordinates (crosshairs) every 200 pixels
-    label_spacing = 200
+    # 3. Draw intersection coordinates (crosshairs) every 100 pixels
+    label_spacing = 100
     for x in range(label_spacing, w, label_spacing):
         for y in range(label_spacing, h, label_spacing):
             # Plot center dot
