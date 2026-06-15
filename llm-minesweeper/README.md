@@ -43,6 +43,7 @@ sequenceDiagram
 - [image_utils.py](image_utils.py): Grid overlay utility that overlays a 100px red axis grid and 200px intersection coordinate markers onto the screenshots.
 - [single_solver.py](single_solver.py): Manages the message history, registers tools (tap, long_press, zoom_in, zoom_out), and requests actions from the LLM.
 - [adb_device.py](adb_device.py): Wraps ADB and `uiautomator2` to handle screen captures, tap actions, long press gestures, and multi-touch zoom gestures.
+- [cli_tester.py](cli_tester.py): An interactive command-line interface to manually test tool actions (taps, long presses, zooms) and generate grid screenshots on the connected device.
 
 ---
 
