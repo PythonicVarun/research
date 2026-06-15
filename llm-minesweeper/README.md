@@ -1,21 +1,49 @@
 # Android Minesweeper LLM Benchmark Harness
 
-This benchmark harness evaluates a Large Language Model's capability to play Minesweeper on an Android device (physical or emulator).
+This benchmark harness evaluates a Large Language Model's capability to play Minesweeper on an Android device (physical or emulator) using a unified, single-model architecture.
 
 The system leverages:
 
-1. **Gemini 3.1 Pro (via OpenAI-compatible API)** as the **Vision Parser** to analyze screenshots and extract game state, cell statuses, and coordinate maps.
-2. An **LLM (via OpenAI-compatible API)** as the **Solver Agent** to make logical deductions (DIG, FLAG, ZOOM_IN, ZOOM_OUT, etc.).
-3. **ADB (Android Debug Bridge)** and optionally **`uiautomator2`** to interact with the device.
+1. **Gemini 3.1 Pro (via OpenAI-compatible API)** as a unified **Solver Agent** to analyze grid-overlaid screenshots, reason about game state, and output action decisions (DIG, FLAG, ZOOM_IN, ZOOM_OUT, etc.) in a single call.
+2. **Pillow** to pre-process screenshots, drawing a coordinate grid over them to eliminate LLM coordinate hallucinations.
+3. **ADB (Android Debug Bridge)** and **`uiautomator2`** to interact with the device.
+
+---
+
+## Architectural Flow
+
+The harness coordinates a closed-loop system where the state of the Android application is captured, processed, and analyzed directly by a single vision-capable LLM to make move decisions.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant D as Android Device
+    participant H as Harness (harness.py)
+    participant S as Solver (single_solver.py)
+
+    loop Every Step
+        H->>D: Capture Screenshot (adb exec-out)
+        D-->>H: Save PNG locally
+        H->>H: Generate Coordinate Grid Overlay (image_utils.py)
+        H->>S: Pass Grid PNG path
+        S->>S: Encode to base64
+        S->>S: Request Decision via Gemini 3.1 Pro (OpenAI vision API)
+        S-->>H: Return Move and State JSON (action, mode, coordinates)
+        H->>D: Execute Action via ADB / uiautomator2
+        Note over H,D: Handle mode switches (DIG <-> FLAG) using layout scaling
+        H->>H: Log Step details (screenshot, state, move)
+        H->>H: Wait 2.0s for animations
+    end
+```
 
 ---
 
 ## Architecture and Components
 
-- [harness.py](file:///V:/Codes/research/llm-minesweeper/harness.py): The main orchestrator that runs the loop, captures screenshots, stores audit logs, and maps decisions back to the device.
-- [adb_device.py](file:///V:/Codes/research/llm-minesweeper/adb_device.py): Wraps ADB and `uiautomator2` to handle screen captures, touch events, and simultaneous two-finger zoom gestures.
-- [vision_parser.py](file:///V:/Codes/research/llm-minesweeper/vision_parser.py): Connects to the OpenAI-compatible vision endpoint to map screenshots to structured JSON board representations.
-- [agent_solver.py](file:///V:/Codes/research/llm-minesweeper/agent_solver.py): Formulates logic prompts for the solver LLM and interprets action outputs (DIG, FLAG, ZOOM, NEW_GAME).
+- [harness.py](file:///V:/Codes/research/llm-minesweeper/harness.py): The main loop that captures screenshots, triggers the coordinate grid generation, requests solver moves, and executes tap actions.
+- [image_utils.py](file:///V:/Codes/research/llm-minesweeper/image_utils.py): Grid overlay utility that overlays a 100px red axis grid and 200px intersection coordinate markers onto the screenshots.
+- [single_solver.py](file:///V:/Codes/research/llm-minesweeper/single_solver.py): Connects to the vision endpoint to perform logical deductions and output move decisions in a single JSON schema.
+- [adb_device.py](file:///V:/Codes/research/llm-minesweeper/adb_device.py): Wraps ADB and `uiautomator2` to handle screen captures, tap actions, mode switches using layout scaling, and multi-touch zoom gestures.
 
 ---
 
@@ -40,7 +68,7 @@ Install the required packages in your python environment:
 pip install -r requirements.txt
 ```
 
-_(Optional)_ If you want to use the most reliable multi-touch zoom gestures, ensure `uiautomator2` is installed. When the harness runs for the first time, it will initialize the necessary agent services on your connected device automatically.
+_(Note: `uiautomator2` is a hard requirement for the harness to run.)_
 
 ### 3. Configuration
 
@@ -55,9 +83,6 @@ Fill in the following details in `.env`:
 - `VISION_API_KEY`: Your Gemini/Google API Key.
 - `VISION_BASE_URL`: OpenAI-compatible endpoint URL for Gemini (e.g. `https://generativelanguage.googleapis.com/v1beta/openai/`).
 - `VISION_MODEL`: The model name (e.g. `gemini-3.1-pro-preview` or your specific version).
-- `AGENT_API_KEY`: API key for the solver model.
-- `AGENT_BASE_URL`: Base URL for the solver model's OpenAI-compatible endpoint.
-- `AGENT_MODEL`: Model name for the solver (e.g. `gpt-4o`, `gemini-2.5-flash`).
 - `ADB_DEVICE_SERIAL`: (Optional) If you have multiple devices connected, specify the target serial here (found via `adb devices`).
 
 ---
@@ -72,10 +97,9 @@ Fill in the following details in `.env`:
 3. The harness will automatically:
     - Identify your connected device.
     - Start a benchmark run under `runs/run_<timestamp>/`.
-    - Take screenshots at each step.
-    - Call the Vision LLM to locate cells and controls.
-    - Ask the Solver LLM for a move (handling toggle modes between DIG and FLAG automatically).
-    - Execute the move and log the results.
+    - Take screenshots at each step and overlay the coordinate grid.
+    - Call the unified Solver LLM to deduce the board logic and choose an action.
+    - Execute the action (automatically handling mode switches using layout scaling) and log the results.
 
 ---
 
@@ -83,8 +107,6 @@ Fill in the following details in `.env`:
 
 Each run creates a dedicated folder under `runs/run_<timestamp>/` containing:
 
-- `step_{N}_screenshot.png`: The device screen at step N.
-- `step_{N}_state.json`: The game state parsed by the Vision model.
-- `step_{N}_move.json`: The decision, reasoning, and target coordinate selected by the Solver model.
-
-This structured audit log allows you to evaluate and analyze the accuracy of both the Vision Parser and the Solver Agent at every stage of the game.
+- `step_{N}_screenshot.png`: The raw device screen.
+- `step_{N}_screenshot_grid.png`: The screenshot with the coordinate grid overlay analyzed by the LLM.
+- `step_{N}_move.json` / `step_{N}_state.json`: The complete decision, parsed game state, reasoning, and target coordinates.
