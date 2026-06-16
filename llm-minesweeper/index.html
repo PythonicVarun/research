@@ -1694,7 +1694,7 @@
                         <div class="replay-viewer">
                             <img
                                 id="replay1-img"
-                                src="runs/run_1781509310/step_0_screenshot.png"
+                                src="./runs/run_1781509310/step_0_screenshot.png"
                                 alt="Game 1 replay"
                                 loading="lazy"
                             />
@@ -1768,7 +1768,7 @@
                         <div class="replay-viewer">
                             <img
                                 id="replay2-img"
-                                src="runs/run_1781616187/step_0_screenshot.png"
+                                src="./runs/run_1781616187/step_0_screenshot.png"
                                 alt="Game 2 replay"
                                 loading="lazy"
                             />
@@ -1842,7 +1842,7 @@
                         <div class="replay-viewer">
                             <img
                                 id="replay3-img"
-                                src="runs/run_1781618466/step_0_screenshot.png"
+                                src="./runs/run_1781618466/step_0_screenshot.png"
                                 alt="Game 3 replay"
                                 loading="lazy"
                             />
@@ -2566,7 +2566,7 @@
             function updateReplayUI(id) {
                 const state = replayState[id];
                 document.getElementById(`${id}-img`).src =
-                    `runs/${state.dir}/step_${state.current}_screenshot.png`;
+                    `./runs/${state.dir}/step_${state.current}_screenshot.png`;
                 document.getElementById(`${id}-progress`).textContent =
                     `${state.current} / ${state.max}`;
                 document.getElementById(`${id}-slider`).value = state.current;
