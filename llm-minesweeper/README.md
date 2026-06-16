@@ -104,10 +104,11 @@ Fill in the following details in `.env`:
 ### Manual Tool Testing CLI
 
 You can manually test tool calls and inspect coordinate grid overlays using the interactive CLI tester:
+
 1. Run the CLI:
-   ```powershell
-   python cli_tester.py
-   ```
+    ```powershell
+    python cli_tester.py
+    ```
 2. The CLI will autoconnect to your device and take an initial grid-overlaid screenshot at `runs/cli_test/cli_step_0.png`.
 3. Enter interactive commands (such as `tap 500 1200`, `long_press 300 500`, `zoom_in`, `zoom_out`, or `screenshot`) to perform actions on the screen.
 4. After each action, the CLI will capture a new screenshot, apply the coordinate grid overlay, and save it to the `runs/cli_test/` directory, printing the file path so you can verify coordinates and game response.

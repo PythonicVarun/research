@@ -1,0 +1,2706 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <script>
+            (function () {
+                const savedTheme = localStorage.getItem("theme");
+                if (savedTheme !== "dark") {
+                    document.documentElement.classList.add("light-theme");
+                }
+            })();
+        </script>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>
+            LLM Minesweeper Benchmark — Can Gemini 3.5 Flash Play Minesweeper on
+            Android?
+        </title>
+        <meta
+            name="description"
+            content="An experiment evaluating Gemini 3.5 Flash's ability to play Minesweeper on a real Android device through ADB and uiautomator2, with step-by-step game replays and key findings on vision-based mobile automation."
+        />
+
+        <link
+            rel="icon"
+            href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%2210 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💣</text></svg>"
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            /* ===== CSS CUSTOM PROPERTIES ===== */
+            :root {
+                --bg-primary: #0a0a0f;
+                --bg-secondary: #12121a;
+                --bg-card: #1a1a28;
+                --bg-card-hover: #222235;
+                --bg-code: #0d0d15;
+                --bg-glass: rgba(26, 26, 40, 0.7);
+                --text-primary: #e8e8f0;
+                --text-secondary: #9a9ab0;
+                --text-muted: #6a6a80;
+                --accent-primary: #7c5cfc;
+                --accent-secondary: #5c8afc;
+                --accent-tertiary: #fc5c8a;
+                --accent-success: #4cdb8a;
+                --accent-warning: #fcb85c;
+                --accent-danger: #fc5c5c;
+                --border-color: rgba(124, 92, 252, 0.15);
+                --border-subtle: rgba(255, 255, 255, 0.06);
+                --gradient-hero: linear-gradient(
+                    135deg,
+                    #7c5cfc 0%,
+                    #5c8afc 50%,
+                    #fc5c8a 100%
+                );
+                --gradient-card: linear-gradient(
+                    135deg,
+                    rgba(124, 92, 252, 0.08) 0%,
+                    rgba(92, 138, 252, 0.04) 100%
+                );
+                --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3);
+                --shadow-glow: 0 0 60px rgba(124, 92, 252, 0.15);
+                --font-body:
+                    "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+                --font-mono: "JetBrains Mono", "Fira Code", monospace;
+            }
+
+            html.light-theme {
+                --bg-primary: #f5f5fa;
+                --bg-secondary: #eeeef5;
+                --bg-card: #ffffff;
+                --bg-card-hover: #f8f8ff;
+                --bg-code: #f0f0f8;
+                --bg-glass: rgba(255, 255, 255, 0.85);
+                --text-primary: #1a1a2e;
+                --text-secondary: #555570;
+                --text-muted: #888898;
+                --accent-primary: #6a4ce0;
+                --accent-secondary: #4a72e0;
+                --accent-tertiary: #e04a72;
+                --accent-success: #2aaa66;
+                --accent-warning: #d9952a;
+                --accent-danger: #d94444;
+                --border-color: rgba(106, 76, 224, 0.2);
+                --border-subtle: rgba(0, 0, 0, 0.08);
+                --gradient-hero: linear-gradient(
+                    135deg,
+                    #6a4ce0 0%,
+                    #4a72e0 50%,
+                    #e04a72 100%
+                );
+                --gradient-card: linear-gradient(
+                    135deg,
+                    rgba(106, 76, 224, 0.06) 0%,
+                    rgba(74, 114, 224, 0.03) 100%
+                );
+                --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.08);
+                --shadow-glow: 0 0 60px rgba(106, 76, 224, 0.08);
+            }
+
+            /* ===== VIEW TRANSITION ===== */
+            @supports not (view-transition-name: root) {
+                body,
+                .card,
+                .section,
+                button {
+                    transition:
+                        background-color 0.4s ease,
+                        border-color 0.4s ease,
+                        color 0.4s ease;
+                }
+            }
+
+            ::view-transition-old(root),
+            ::view-transition-new(root) {
+                animation: none;
+                mix-blend-mode: normal;
+            }
+
+            ::view-transition-new(root) {
+                z-index: 9999;
+            }
+
+            ::view-transition-old(root) {
+                z-index: 1;
+            }
+
+            /* ===== RESET & BASE ===== */
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            html {
+                scroll-behavior: smooth;
+                font-size: 16px;
+            }
+
+            body {
+                font-family: var(--font-body);
+                background: var(--bg-primary);
+                color: var(--text-primary);
+                line-height: 1.7;
+                overflow-x: hidden;
+            }
+
+            /* ===== THEME TOGGLE ===== */
+            .theme-toggle-btn {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 1000;
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                border: 1px solid var(--border-color);
+                background: var(--bg-glass);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 20px;
+                transition:
+                    transform 0.3s ease,
+                    box-shadow 0.3s ease;
+            }
+
+            .theme-toggle-btn:hover {
+                transform: scale(1.1);
+                box-shadow: var(--shadow-glow);
+            }
+
+            .theme-toggle-btn span {
+                position: absolute;
+                transition:
+                    transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                    opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .sun-icon {
+                opacity: 0;
+                transform: rotate(90deg) scale(0);
+            }
+
+            .moon-icon {
+                opacity: 1;
+                transform: rotate(0) scale(1);
+            }
+
+            .light-theme .sun-icon {
+                opacity: 1;
+                transform: rotate(0) scale(1);
+            }
+
+            .light-theme .moon-icon {
+                opacity: 0;
+                transform: rotate(-90deg) scale(0);
+            }
+
+            /* ===== LAYOUT ===== */
+            .container {
+                max-width: 1100px;
+                margin: 0 auto;
+                padding: 0 24px;
+            }
+
+            /* ===== HERO ===== */
+            .hero {
+                display: flex;
+                align-items: center;
+                min-height: 100vh;
+                position: relative;
+                padding: 100px 0 80px;
+                text-align: center;
+                overflow: hidden;
+            }
+
+            .hero::before {
+                content: "";
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: radial-gradient(
+                    circle at 50% 50%,
+                    rgba(124, 92, 252, 0.06) 0%,
+                    transparent 60%
+                );
+                animation: pulseGlow 8s ease-in-out infinite;
+            }
+
+            @keyframes pulseGlow {
+                0%,
+                100% {
+                    opacity: 0.5;
+                    transform: scale(1);
+                }
+
+                50% {
+                    opacity: 1;
+                    transform: scale(1.1);
+                }
+            }
+
+            .hero-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 6px 16px;
+                border-radius: 100px;
+                background: var(--gradient-card);
+                border: 1px solid var(--border-color);
+                font-size: 0.8rem;
+                font-weight: 500;
+                color: var(--accent-primary);
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+                margin-bottom: 24px;
+            }
+
+            .hero-badge .dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: var(--accent-danger);
+                animation: blink 2s ease-in-out infinite;
+            }
+
+            @keyframes blink {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+
+                50% {
+                    opacity: 0.3;
+                }
+            }
+
+            .hero h1 {
+                position: relative;
+                font-size: clamp(2.2rem, 5vw, 3.8rem);
+                font-weight: 900;
+                line-height: 1.15;
+                letter-spacing: -0.03em;
+                margin-bottom: 20px;
+            }
+
+            .hero h1 .gradient-text {
+                background: var(--gradient-hero);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+
+            .hero .subtitle {
+                position: relative;
+                font-size: 1.15rem;
+                color: var(--text-secondary);
+                max-width: 680px;
+                margin: 0 auto 40px;
+                font-weight: 400;
+            }
+
+            .hero-stats {
+                display: flex;
+                justify-content: center;
+                gap: 40px;
+                flex-wrap: wrap;
+            }
+
+            .hero-stat {
+                text-align: center;
+            }
+
+            .hero-stat .value {
+                font-size: 2rem;
+                font-weight: 800;
+                background: var(--gradient-hero);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+
+            .hero-stat .label {
+                font-size: 0.78rem;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-top: 2px;
+            }
+
+            /* ===== SECTIONS ===== */
+            .section {
+                padding: 80px 0;
+                position: relative;
+            }
+
+            .section-header {
+                margin-bottom: 48px;
+            }
+
+            .section-label {
+                display: inline-block;
+                font-size: 0.72rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                color: var(--accent-primary);
+                margin-bottom: 12px;
+            }
+
+            .section-title {
+                font-size: clamp(1.6rem, 3vw, 2.4rem);
+                font-weight: 800;
+                letter-spacing: -0.02em;
+                line-height: 1.2;
+            }
+
+            .section-desc {
+                color: var(--text-secondary);
+                margin-top: 12px;
+                max-width: 700px;
+                font-size: 1rem;
+            }
+
+            /* ===== CARDS ===== */
+            .card {
+                background: var(--gradient-card);
+                background-color: var(--bg-card);
+                border: 1px solid var(--border-subtle);
+                border-radius: 16px;
+                padding: 32px;
+                transition:
+                    transform 0.3s ease,
+                    box-shadow 0.3s ease,
+                    border-color 0.3s ease;
+            }
+
+            .card:hover {
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-card);
+                border-color: var(--border-color);
+            }
+
+            /* ===== APPROACH CARDS ===== */
+            .approach-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 24px;
+                margin-top: 32px;
+            }
+
+            .approach-card {
+                position: relative;
+                overflow: hidden;
+            }
+
+            .approach-card .approach-number {
+                position: absolute;
+                top: 16px;
+                right: 20px;
+                font-size: 4rem;
+                font-weight: 900;
+                opacity: 0.06;
+                line-height: 1;
+            }
+
+            .approach-card .approach-icon {
+                width: 48px;
+                height: 48px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.5rem;
+                margin-bottom: 16px;
+            }
+
+            .approach-card .approach-icon.fail {
+                background: rgba(252, 92, 92, 0.12);
+            }
+
+            .approach-card .approach-icon.partial {
+                background: rgba(252, 184, 92, 0.12);
+            }
+
+            .approach-card .approach-icon.best {
+                background: rgba(76, 219, 138, 0.12);
+            }
+
+            .approach-card h3 {
+                font-size: 1.15rem;
+                font-weight: 700;
+                margin-bottom: 10px;
+            }
+
+            .approach-card p {
+                color: var(--text-secondary);
+                font-size: 0.92rem;
+                line-height: 1.6;
+            }
+
+            .status-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 4px 12px;
+                border-radius: 100px;
+                font-size: 0.72rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .approach-card .status-badge {
+                margin-top: 16px;
+            }
+
+            .status-badge.fail {
+                background: rgba(252, 92, 92, 0.12);
+                color: var(--accent-danger);
+                border: 1px solid rgba(252, 92, 92, 0.2);
+            }
+
+            .status-badge.partial {
+                background: rgba(252, 184, 92, 0.12);
+                color: var(--accent-warning);
+                border: 1px solid rgba(252, 184, 92, 0.2);
+            }
+
+            .status-badge.best {
+                background: rgba(76, 219, 138, 0.12);
+                color: var(--accent-success);
+                border: 1px solid rgba(76, 219, 138, 0.2);
+            }
+
+            /* ===== ARCHITECTURE ===== */
+            .arch-flow {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+                flex-wrap: wrap;
+                margin: 40px 0;
+            }
+
+            .arch-node {
+                background: var(--bg-card);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                padding: 16px 24px;
+                text-align: center;
+                min-width: 140px;
+                transition:
+                    transform 0.3s ease,
+                    box-shadow 0.3s ease;
+            }
+
+            .arch-node:hover {
+                transform: translateY(-3px);
+                box-shadow: var(--shadow-glow);
+            }
+
+            .arch-node .node-icon {
+                font-size: 1.8rem;
+                margin-bottom: 6px;
+            }
+
+            .arch-node .node-label {
+                font-size: 0.82rem;
+                font-weight: 600;
+                color: var(--text-primary);
+            }
+
+            .arch-node .node-detail {
+                font-size: 0.7rem;
+                color: var(--text-muted);
+                margin-top: 2px;
+            }
+
+            .arch-arrow {
+                font-size: 1.4rem;
+                color: var(--accent-primary);
+                opacity: 0.6;
+            }
+
+            /* ===== GAME REPLAYS ===== */
+            .replays-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 28px;
+                margin-top: 32px;
+            }
+
+            .replay-card {
+                background: var(--bg-card);
+                border: 1px solid var(--border-subtle);
+                border-radius: 16px;
+                overflow: hidden;
+                transition:
+                    transform 0.3s ease,
+                    box-shadow 0.3s ease;
+            }
+
+            .replay-card:hover {
+                transform: translateY(-3px);
+                box-shadow: var(--shadow-card);
+            }
+
+            .replay-header {
+                padding: 20px 24px 12px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .replay-header h3 {
+                font-size: 1rem;
+                font-weight: 700;
+            }
+
+            .replay-header .game-result {
+                font-size: 0.72rem;
+                font-weight: 600;
+                padding: 4px 12px;
+                border-radius: 100px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .game-result.lost {
+                background: rgba(252, 92, 92, 0.12);
+                color: var(--accent-danger);
+                border: 1px solid rgba(252, 92, 92, 0.2);
+            }
+
+            .replay-viewer {
+                position: relative;
+                background: #000000;
+                aspect-ratio: 9/18;
+                max-height: 480px;
+                margin: 0 auto;
+                border-radius: 12px;
+                overflow: hidden;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .replay-viewer img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                transition: opacity 0.3s ease;
+            }
+
+            .replay-buttons-container {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 16px;
+                padding: 10px 24px 5px;
+            }
+
+            .replay-progress-container {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+                padding: 0px 24px 12px;
+            }
+
+            .replay-btn {
+                width: 36px;
+                height: 36px;
+                flex-shrink: 0;
+                border-radius: 50%;
+                border: 1px solid var(--border-color);
+                background: var(--bg-card);
+                color: var(--text-primary);
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.9rem;
+                transition:
+                    background 0.2s ease,
+                    transform 0.2s ease;
+            }
+
+            .replay-btn:hover {
+                background: var(--accent-primary);
+                color: #fff;
+                transform: scale(1.1);
+            }
+
+            .replay-btn.play-btn {
+                width: 42px;
+                height: 42px;
+                font-size: 1rem;
+            }
+
+            .replay-progress {
+                font-size: 0.78rem;
+                color: var(--text-muted);
+                font-family: var(--font-mono);
+                min-width: 80px;
+                text-align: center;
+            }
+
+            .replay-slider {
+                flex: 1;
+                max-width: 160px;
+                height: 4px;
+                -webkit-appearance: none;
+                appearance: none;
+                background: var(--border-subtle);
+                border-radius: 2px;
+                outline: none;
+            }
+
+            .replay-slider::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+                background: var(--accent-primary);
+                cursor: pointer;
+                border: 2px solid var(--bg-card);
+                box-shadow: 0 0 6px rgba(124, 92, 252, 0.4);
+            }
+
+            .replay-meta {
+                padding: 0 24px 20px;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .replay-meta-item {
+                font-size: 0.78rem;
+                color: var(--text-muted);
+            }
+
+            .replay-meta-item span {
+                font-weight: 600;
+                color: var(--text-secondary);
+            }
+
+            /* ===== REASONING SECTION ===== */
+            .reasoning-feed {
+                margin-top: 32px;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .reason-item {
+                background: var(--bg-card);
+                border: 1px solid var(--border-subtle);
+                border-radius: 12px;
+                padding: 20px 24px;
+                position: relative;
+                overflow: hidden;
+                transition: border-color 0.3s ease;
+            }
+
+            .reason-item:hover {
+                border-color: var(--border-color);
+            }
+
+            .reason-item::before {
+                content: "";
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 3px;
+                border-radius: 3px 0 0 3px;
+            }
+
+            .reason-item.game-1::before {
+                background: var(--accent-primary);
+            }
+
+            .reason-item.game-2::before {
+                background: var(--accent-secondary);
+            }
+
+            .reason-item.game-3::before {
+                background: var(--accent-tertiary);
+            }
+
+            .reason-header {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 8px;
+            }
+
+            .reason-game-tag {
+                font-size: 0.68rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                padding: 2px 10px;
+                border-radius: 100px;
+            }
+
+            .reason-game-tag.g2 {
+                background: rgba(92, 138, 252, 0.12);
+                color: var(--accent-secondary);
+            }
+
+            .reason-game-tag.g3 {
+                background: rgba(252, 92, 138, 0.12);
+                color: var(--accent-tertiary);
+            }
+
+            .reason-step {
+                font-size: 0.72rem;
+                color: var(--text-muted);
+                font-family: var(--font-mono);
+            }
+
+            .reason-action {
+                font-family: var(--font-mono);
+                font-size: 0.78rem;
+                color: var(--accent-success);
+                margin-bottom: 6px;
+            }
+
+            .reason-text {
+                font-size: 0.88rem;
+                color: var(--text-secondary);
+                line-height: 1.6;
+                font-style: italic;
+            }
+
+            .reason-text::before {
+                content: '"';
+                color: var(--accent-primary);
+                font-size: 1.2rem;
+                font-weight: 700;
+            }
+
+            .reason-text::after {
+                content: '"';
+                color: var(--accent-primary);
+                font-size: 1.2rem;
+                font-weight: 700;
+            }
+
+            .no-reason-note {
+                background: var(--bg-card);
+                border: 1px solid var(--border-subtle);
+                border-radius: 12px;
+                padding: 20px 24px;
+                color: var(--text-muted);
+                font-size: 0.88rem;
+                text-align: center;
+                font-style: italic;
+            }
+
+            /* ===== RESULTS TABLE ===== */
+            .results-table-wrap {
+                overflow-x: auto;
+                margin-top: 32px;
+                border-radius: 16px;
+                border: 1px solid var(--border-subtle);
+            }
+
+            .results-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.9rem;
+            }
+
+            .results-table thead {
+                background: var(--bg-card);
+            }
+
+            .results-table th {
+                padding: 16px 20px;
+                text-align: left;
+                font-weight: 600;
+                font-size: 0.78rem;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                color: var(--text-muted);
+                border-bottom: 1px solid var(--border-subtle);
+            }
+
+            .results-table td {
+                padding: 16px 20px;
+                border-bottom: 1px solid var(--border-subtle);
+                color: var(--text-secondary);
+            }
+
+            .results-table tbody tr {
+                transition: background 0.2s ease;
+            }
+
+            .results-table tbody tr:hover {
+                background: var(--bg-card);
+            }
+
+            .results-table tbody tr:last-child td {
+                border-bottom: none;
+            }
+
+            /* ===== TECH STACK ===== */
+            .tech-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 16px;
+                margin-top: 24px;
+            }
+
+            .tech-item {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                padding: 16px 20px;
+                background: var(--bg-card);
+                border: 1px solid var(--border-subtle);
+                border-radius: 12px;
+                transition: border-color 0.3s ease;
+            }
+
+            .tech-item:hover {
+                border-color: var(--border-color);
+            }
+
+            .tech-item .tech-icon {
+                font-size: 1.6rem;
+                flex-shrink: 0;
+            }
+
+            .tech-item .tech-name {
+                font-weight: 600;
+                font-size: 0.9rem;
+            }
+
+            .tech-item .tech-role {
+                font-size: 0.75rem;
+                color: var(--text-muted);
+            }
+
+            /* ===== KEY FINDINGS ===== */
+            .findings-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 24px;
+                margin-top: 32px;
+            }
+
+            .finding-card {
+                padding: 28px;
+            }
+
+            .finding-card .finding-num {
+                font-size: 0.72rem;
+                font-weight: 700;
+                color: var(--accent-primary);
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                margin-bottom: 12px;
+            }
+
+            .finding-card h3 {
+                font-size: 1.1rem;
+                font-weight: 700;
+                margin-bottom: 10px;
+                line-height: 1.35;
+            }
+
+            .finding-card p {
+                color: var(--text-secondary);
+                font-size: 0.88rem;
+                line-height: 1.65;
+            }
+
+            /* ===== CODE BLOCKS ===== */
+            .code-block {
+                background: var(--bg-code);
+                border: 1px solid var(--border-subtle);
+                border-radius: 12px;
+                padding: 20px 24px;
+                font-family: var(--font-mono);
+                font-size: 0.82rem;
+                line-height: 1.7;
+                overflow-x: auto;
+                margin: 20px 0;
+                color: var(--text-secondary);
+            }
+
+            .code-block .comment {
+                color: var(--text-muted);
+            }
+
+            .code-block .keyword {
+                color: var(--accent-primary);
+            }
+
+            .code-block .string {
+                color: var(--accent-success);
+            }
+
+            .code-block .func {
+                color: var(--accent-secondary);
+            }
+
+            /* ===== SEPARATOR ===== */
+            .section-divider {
+                height: 1px;
+                background: linear-gradient(
+                    90deg,
+                    transparent,
+                    var(--border-color),
+                    transparent
+                );
+                margin: 0 auto;
+                max-width: 600px;
+            }
+
+            /* ===== FOOTER ===== */
+            .footer {
+                padding: 60px 0 40px;
+                text-align: center;
+                border-top: 1px solid var(--border-subtle);
+            }
+
+            .footer p {
+                color: var(--text-muted);
+                font-size: 0.82rem;
+            }
+
+            .footer a {
+                color: var(--accent-primary);
+                text-decoration: none;
+                transition: color 0.2s ease;
+            }
+
+            .footer a:hover {
+                color: var(--accent-secondary);
+            }
+
+            /* ===== RESPONSIVE ===== */
+            @media (max-width: 768px) {
+                .hero {
+                    padding: 60px 0 50px;
+                }
+
+                .hero-stats {
+                    gap: 24px;
+                }
+
+                .section {
+                    padding: 50px 0;
+                }
+
+                .arch-flow {
+                    flex-direction: column;
+                }
+
+                .arch-arrow {
+                    transform: rotate(90deg);
+                }
+
+                .replays-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .approach-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            /* ===== SCROLL ANIMATIONS ===== */
+            .fade-in {
+                opacity: 0;
+                transform: translateY(30px);
+                transition:
+                    opacity 0.6s ease,
+                    transform 0.6s ease;
+            }
+
+            .fade-in.visible {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            /* ===== INLINE LINK ===== */
+            a.inline-link {
+                color: var(--accent-primary);
+                text-decoration: none;
+                border-bottom: 1px solid rgba(124, 92, 252, 0.3);
+                transition:
+                    border-color 0.2s ease,
+                    color 0.2s ease;
+            }
+
+            a.inline-link:hover {
+                color: var(--accent-secondary);
+                border-color: var(--accent-secondary);
+            }
+
+            /* ===== CONTEXT BANNER ===== */
+            .context-banner {
+                background: var(--gradient-card);
+                background-color: var(--bg-card);
+                border: 1px solid var(--border-color);
+                border-radius: 16px;
+                padding: 28px 32px;
+                margin-top: 40px;
+                display: flex;
+                align-items: flex-start;
+                gap: 16px;
+            }
+
+            .context-banner .banner-icon {
+                font-size: 1.5rem;
+                flex-shrink: 0;
+                margin-top: 2px;
+            }
+
+            .context-banner .banner-content h4 {
+                font-weight: 700;
+                margin-bottom: 6px;
+                font-size: 1rem;
+            }
+
+            .context-banner .banner-content p {
+                color: var(--text-secondary);
+                font-size: 0.9rem;
+                line-height: 1.6;
+            }
+
+            /* ===== UI TYPE COMPARISON ===== */
+            .ui-comparison {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 24px;
+                margin-top: 32px;
+            }
+
+            .ui-compare-card {
+                text-align: center;
+            }
+
+            .ui-compare-card .ui-label {
+                font-size: 0.82rem;
+                font-weight: 600;
+                color: var(--text-muted);
+                margin-bottom: 12px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .ui-compare-card img {
+                width: 100%;
+                max-height: 280px;
+                object-fit: contain;
+                border-radius: 8px;
+                border: 1px solid var(--border-subtle);
+                margin-top: 4px;
+                margin-bottom: 16px;
+                background: var(--bg-secondary);
+            }
+
+            .ui-compare-card .ui-desc {
+                font-size: 0.88rem;
+                color: var(--text-secondary);
+                margin-top: 12px;
+                line-height: 1.6;
+            }
+
+            .ui-compare-card .status-badge {
+                margin-top: 12px;
+            }
+
+            .app-link {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                margin-top: 12px;
+                font-size: 0.78rem;
+                color: var(--accent-primary);
+                text-decoration: none;
+                border: 1px solid var(--border-color);
+                padding: 5px 14px;
+                border-radius: 100px;
+                transition:
+                    background 0.2s ease,
+                    color 0.2s ease;
+            }
+
+            .app-link:hover {
+                background: var(--accent-primary);
+                color: #fff;
+            }
+
+            @media (max-width: 600px) {
+                .ui-comparison {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            /* ===== CUSTOM SCROLLBARS ===== */
+            ::-webkit-scrollbar {
+                width: 10px;
+                height: 10px;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: var(--bg-primary);
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: var(--border-color);
+                border-radius: 5px;
+                border: 2px solid var(--bg-primary);
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: var(--accent-primary);
+            }
+
+            /* ===== NAV SIDEBAR / DOTS ===== */
+            .nav-dots {
+                position: fixed;
+                right: 20px;
+                top: 50%;
+                transform: translateY(-50%);
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                z-index: 999;
+                background: var(--bg-glass);
+                border: 1px solid var(--border-color);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                padding: 16px 10px;
+                border-radius: 100px;
+                box-shadow: var(--shadow-card);
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .nav-dot-wrapper {
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 16px;
+                height: 16px;
+            }
+
+            .nav-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: var(--text-muted);
+                opacity: 0.4;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                cursor: pointer;
+                border: none;
+                z-index: 2;
+            }
+
+            .nav-dot-wrapper:hover .nav-dot,
+            .nav-dot.active {
+                opacity: 1;
+                background: var(--accent-primary);
+                transform: scale(1.3);
+                box-shadow: 0 0 8px var(--accent-primary);
+            }
+
+            .nav-label {
+                position: absolute;
+                right: 32px;
+                background: var(--bg-card);
+                border: 1px solid var(--border-color);
+                color: var(--text-primary);
+                padding: 4px 10px;
+                border-radius: 6px;
+                font-size: 0.75rem;
+                font-weight: 500;
+                white-space: nowrap;
+                opacity: 0;
+                transform: translateX(10px) scale(0.95);
+                pointer-events: none;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: var(--shadow-card);
+                z-index: 1;
+            }
+
+            .nav-dot-wrapper:hover .nav-label {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+
+            @media (max-width: 768px) {
+                .nav-dots {
+                    display: none;
+                }
+            }
+
+            /* Autoplay indicator */
+            .autoplay-indicator {
+                position: absolute;
+                bottom: 8px;
+                right: 8px;
+                font-size: 0.65rem;
+                color: var(--accent-success);
+                background: rgba(0, 0, 0, 0.6);
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-weight: 600;
+                letter-spacing: 0.5px;
+                text-transform: uppercase;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+            .autoplay-indicator.visible {
+                opacity: 1;
+            }
+        </style>
+    </head>
+
+    <body>
+        <!-- Theme Toggle -->
+        <button
+            id="theme-toggle"
+            class="theme-toggle-btn"
+            aria-label="Toggle theme"
+            onclick="toggleTheme(event)"
+        >
+            <span class="sun-icon">☀️</span>
+            <span class="moon-icon">🌙</span>
+        </button>
+
+        <!-- Nav Dots -->
+        <nav
+            class="nav-dots"
+            id="navDots"
+            aria-label="Section navigation"
+        ></nav>
+
+        <!-- ============ HERO ============ -->
+        <header class="hero" id="sec-hero">
+            <div class="container">
+                <div class="hero-badge">
+                    <span class="dot"></span>
+                    Experiment Report
+                </div>
+                <h1>
+                    Can <span class="gradient-text"> Gemini 3.5 Flash </span
+                    ><br />
+                    Play Minesweeper on Android?
+                </h1>
+                <p class="subtitle">
+                    Evaluating LLM vision capabilities for mobile game
+                    automation via ADB — a deep dive into three distinct
+                    approaches, three games played, and the surprising gap
+                    between chess mastery and spatial reasoning.
+                </p>
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <div class="value">3</div>
+                        <div class="label">Games Played</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="value">0</div>
+                        <div class="label">Games Won</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="value">3</div>
+                        <div class="label">Approaches Tested</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="value">~55 min</div>
+                        <div class="label">Total Play Time</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="section-divider"></div>
+
+        <!-- ============ CONTEXT ============ -->
+        <section class="section" id="sec-context">
+            <div class="container">
+                <div class="section-header fade-in">
+                    <span class="section-label">Background</span>
+                    <h2 class="section-title">Why This Experiment?</h2>
+                    <p class="section-desc">
+                        Building on the success of the
+                        <a
+                            href="https://pythonicvarun.github.io/llm-chess-evaluation-harness/"
+                            class="inline-link"
+                            target="_blank"
+                        >
+                            LLM Chess Evaluation
+                        </a>
+                        — where Gemini 3.5 Flash demonstrated an estimated Elo
+                        of ~1900, competing with GPT-5.5 at a fraction of the
+                        cost — we wanted to explore whether these capabilities
+                        extend to spatial reasoning tasks on real mobile
+                        devices.
+                    </p>
+                </div>
+
+                <div class="context-banner fade-in">
+                    <span class="banner-icon">♟️</span>
+                    <div class="banner-content">
+                        <h4>Prior Work: Chess Benchmark</h4>
+                        <p>
+                            Gemini 3.5 Flash was tested against different Elo
+                            levels of Stockfish and achieved an estimated rating
+                            of ~1900 Elo, making it competitive with GPT-5.5
+                            while offering significantly lower cost. This strong
+                            performance in chess (a symbolic, well-structured
+                            game) motivated the question: can the same model
+                            handle a visual, spatial reasoning task like
+                            Minesweeper — especially when played through a real
+                            Android device UI?
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- ============ TECH STACK ============ -->
+        <section class="section" id="sec-tech">
+            <div class="container">
+                <div class="section-header fade-in">
+                    <span class="section-label">Infrastructure</span>
+                    <h2 class="section-title">How We Connected to Android</h2>
+                    <p class="section-desc">
+                        The harness establishes a closed-loop control system
+                        between the LLM and a real Android device. Here's the
+                        technology stack that makes it possible.
+                    </p>
+                </div>
+
+                <div class="tech-grid fade-in">
+                    <div class="tech-item">
+                        <span class="tech-icon">🤖</span>
+                        <div>
+                            <div class="tech-name">Gemini 3.5 Flash</div>
+                            <div class="tech-role">
+                                Vision LLM (via OpenAI API)
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <span class="tech-icon">📱</span>
+                        <div>
+                            <div class="tech-name">ADB</div>
+                            <div class="tech-role">Android Debug Bridge</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <span class="tech-icon">🔧</span>
+                        <div>
+                            <div class="tech-name">uiautomator2</div>
+                            <div class="tech-role">
+                                Python Android automation
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <span class="tech-icon">🖼️</span>
+                        <div>
+                            <div class="tech-name">Pillow</div>
+                            <div class="tech-role">Coordinate grid overlay</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <span class="tech-icon">🐍</span>
+                        <div>
+                            <div class="tech-name">Python 3.12+</div>
+                            <div class="tech-role">Harness runtime</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <span class="tech-icon">🔑</span>
+                        <div>
+                            <div class="tech-name">OpenAI SDK</div>
+                            <div class="tech-role">API client for Gemini</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fade-in" style="margin-top: 48px">
+                    <h3
+                        style="
+                            font-size: 1.1rem;
+                            font-weight: 700;
+                            margin-bottom: 16px;
+                        "
+                    >
+                        Architecture Flow
+                    </h3>
+                    <p
+                        style="
+                            color: var(--text-secondary);
+                            font-size: 0.92rem;
+                            margin-bottom: 24px;
+                        "
+                    >
+                        Each step in the game follows a deterministic loop:
+                        capture → overlay → reason → act → wait → repeat.
+                    </p>
+                    <div class="arch-flow">
+                        <div class="arch-node">
+                            <div class="node-icon">📱</div>
+                            <div class="node-label">Android Device</div>
+                            <div class="node-detail">Minesweeper App</div>
+                        </div>
+                        <span class="arch-arrow">→</span>
+                        <div class="arch-node">
+                            <div class="node-icon">📸</div>
+                            <div class="node-label">Screenshot</div>
+                            <div class="node-detail">
+                                adb exec-out screencap
+                            </div>
+                        </div>
+                        <span class="arch-arrow">→</span>
+                        <div class="arch-node">
+                            <div class="node-icon">📐</div>
+                            <div class="node-label">Grid Overlay</div>
+                            <div class="node-detail">100px coordinate grid</div>
+                        </div>
+                        <span class="arch-arrow">→</span>
+                        <div class="arch-node">
+                            <div class="node-icon">🧠</div>
+                            <div class="node-label">Gemini 3.5 Flash</div>
+                            <div class="node-detail">Vision + Tool Calling</div>
+                        </div>
+                        <span class="arch-arrow">→</span>
+                        <div class="arch-node">
+                            <div class="node-icon">👆</div>
+                            <div class="node-label">Execute Action</div>
+                            <div class="node-detail">
+                                tap / long_press / zoom
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="context-banner fade-in" style="margin-top: 32px">
+                    <span class="banner-icon">💡</span>
+                    <div class="banner-content">
+                        <h4>Why uiautomator2?</h4>
+                        <p>
+                            ADB's built-in <code>input tap</code> command can
+                            send touch events, but it proved insufficient for
+                            complex gestures like pinch-to-zoom. The
+                            <code>uiautomator2</code> Python library wraps
+                            Android's UIAutomator testing framework, providing
+                            reliable multi-touch gestures (pinch in/out),
+                            element selection, and more robust device
+                            interaction — making it the critical enabler for
+                            zoom controls in this experiment.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- ============ APPROACHES ============ -->
+        <section class="section" id="sec-approaches">
+            <div class="container">
+                <div class="section-header fade-in">
+                    <span class="section-label">Methodology</span>
+                    <h2 class="section-title">Three Approaches Tested</h2>
+                    <p class="section-desc">
+                        The experiment iterated through three distinct
+                        architectures, each progressively giving the model more
+                        agency and better tools.
+                    </p>
+                </div>
+
+                <div class="approach-grid fade-in">
+                    <div class="card approach-card">
+                        <span class="approach-number">01</span>
+                        <div class="approach-icon fail">🔗</div>
+                        <h3>Dual-Agent System</h3>
+                        <p>
+                            A two-model pipeline: the first model (vision)
+                            analyzed the screen and extracted coordinates, then
+                            passed them to a second model (reasoning) to decide
+                            the next move. <strong>Complete failure</strong> —
+                            the reasoning agent couldn't interpret coordinates
+                            or understand the game state passed to it from the
+                            vision agent.
+                        </p>
+                        <div class="status-badge fail">✕ Complete Failure</div>
+                    </div>
+                    <div class="card approach-card">
+                        <span class="approach-number">02</span>
+                        <div class="approach-icon partial">📋</div>
+                        <h3>Single Model + JSON Output</h3>
+                        <p>
+                            Following the chess harness pattern: a single vision
+                            model receives the full screen and outputs
+                            structured JSON describing its next move. The model
+                            could engage with the game but
+                            <strong>still struggled</strong> with accurately
+                            mapping visual positions to precise coordinates
+                            without spatial reference aids.
+                        </p>
+                        <div class="status-badge partial">
+                            ⚠ Partially Worked
+                        </div>
+                    </div>
+                    <div class="card approach-card">
+                        <span class="approach-number">03</span>
+                        <div class="approach-icon best">🛠️</div>
+                        <h3>Single Model + Tool Calling</h3>
+                        <p>
+                            The final architecture: a single vision model with
+                            explicit tools (<code>tap</code>,
+                            <code>long_press</code>, <code>zoom_in</code>,
+                            <code>zoom_out</code>) — each with an optional
+                            <code>reason</code> parameter for the model to
+                            explain its logic — plus a coordinate grid overlay
+                            on every screenshot.
+                            <strong>
+                                This was the only approach that actually got the
+                                model playing
+                            </strong>
+                            — though it still lost every game.
+                        </p>
+                        <div class="status-badge best">
+                            ✓ Best Approach (used)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- ============ UI COMPARISON ============ -->
+        <section class="section" id="sec-ui">
+            <div class="container">
+                <div class="section-header fade-in">
+                    <span class="section-label">Observation</span>
+                    <h2 class="section-title">Classic UI vs. Modern UI</h2>
+                    <p class="section-desc">
+                        Two different Minesweeper app UIs were tested. The
+                        model's performance was highly sensitive to UI design.
+                    </p>
+                </div>
+
+                <div class="ui-comparison fade-in">
+                    <div class="card ui-compare-card">
+                        <div class="ui-label">Classic / Retro UI</div>
+                        <img
+                            src="report/classic_app_ui.png"
+                            alt="Classic Minesweeper App UI"
+                            loading="lazy"
+                        />
+                        <p class="ui-desc">
+                            Windows 95-era Minesweeper aesthetic with raised 3D
+                            tile borders, clear grid lines, and high-contrast
+                            colors. The model was able to
+                            <strong>initiate the game and play moves</strong>,
+                            though it ultimately lost all three games.
+                        </p>
+                        <div class="status-badge partial">
+                            ⚠ Playable but Lost All
+                        </div>
+                        <br />
+                        <a
+                            href="https://play.google.com/store/apps/details?id=Draziw.Button.Mines"
+                            class="app-link"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            ▶ Play Store ↗
+                        </a>
+                    </div>
+                    <div class="card ui-compare-card">
+                        <div class="ui-label">Modern / Flat UI</div>
+                        <img
+                            src="report/modern_app_ui.png"
+                            alt="Modern Minesweeper App UI"
+                            loading="lazy"
+                        />
+                        <p class="ui-desc">
+                            A modern, flat-design Minesweeper app with minimal
+                            borders and softer colors. The model
+                            <strong>couldn't even initiate the game</strong> —
+                            it took 10+ attempts just to click on a single cell.
+                            Without the coordinate grid, it hallucinated
+                            coordinates entirely.
+                        </p>
+                        <div class="status-badge fail">✕ Could Not Play</div>
+                        <br />
+                        <a
+                            href="https://play.google.com/store/apps/details?id=ee.dustland.android.minesweeper"
+                            class="app-link"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            ▶ Play Store ↗
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- ============ GAME REPLAYS ============ -->
+        <section class="section" id="sec-replays">
+            <div class="container">
+                <div class="section-header fade-in">
+                    <span class="section-label">Game Replays</span>
+                    <h2 class="section-title">Watch the Games Unfold</h2>
+                    <p class="section-desc">
+                        Step through each game as the model played it. Use the
+                        controls to navigate, or hit play for an auto-advancing
+                        slideshow.
+                    </p>
+                </div>
+
+                <div class="replays-grid fade-in">
+                    <!-- Game 1 -->
+                    <div class="replay-card" id="replay-1">
+                        <div class="replay-header">
+                            <h3>Game 1</h3>
+                            <span class="game-result lost">💥 Lost</span>
+                        </div>
+                        <div class="replay-viewer">
+                            <img
+                                id="replay1-img"
+                                src="runs/run_1781509310/step_0_screenshot.png"
+                                alt="Game 1 replay"
+                                loading="lazy"
+                            />
+                            <div
+                                class="autoplay-indicator"
+                                id="replay1-autoplay"
+                            >
+                                ▶ AUTO
+                            </div>
+                        </div>
+                        <div class="replay-buttons-container">
+                            <button
+                                class="replay-btn"
+                                onclick="replayStep('replay1', -1)"
+                                aria-label="Previous step"
+                            >
+                                ◀
+                            </button>
+                            <button
+                                class="replay-btn play-btn"
+                                id="replay1-play"
+                                onclick="toggleAutoplay('replay1')"
+                                aria-label="Auto play"
+                            >
+                                ▶
+                            </button>
+                            <button
+                                class="replay-btn"
+                                onclick="replayStep('replay1', 1)"
+                                aria-label="Next step"
+                            >
+                                ▶
+                            </button>
+                        </div>
+                        <div class="replay-progress-container">
+                            <input
+                                type="range"
+                                class="replay-slider"
+                                id="replay1-slider"
+                                min="0"
+                                max="18"
+                                value="0"
+                                oninput="replaySlide('replay1', this.value)"
+                            />
+                            <span class="replay-progress" id="replay1-progress">
+                                0 / 18
+                            </span>
+                        </div>
+                        <div class="replay-meta">
+                            <div class="replay-meta-item">
+                                Steps: <span>19</span>
+                            </div>
+                            <div class="replay-meta-item">
+                                Duration: <span>~23 min</span>
+                            </div>
+                            <div class="replay-meta-item">
+                                Board: <span>Classic UI</span>
+                            </div>
+                            <div class="replay-meta-item">
+                                Mines: <span>38</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Game 2 -->
+                    <div class="replay-card" id="replay-2">
+                        <div class="replay-header">
+                            <h3>Game 2</h3>
+                            <span class="game-result lost">💥 Lost</span>
+                        </div>
+                        <div class="replay-viewer">
+                            <img
+                                id="replay2-img"
+                                src="runs/run_1781616187/step_0_screenshot.png"
+                                alt="Game 2 replay"
+                                loading="lazy"
+                            />
+                            <div
+                                class="autoplay-indicator"
+                                id="replay2-autoplay"
+                            >
+                                ▶ AUTO
+                            </div>
+                        </div>
+                        <div class="replay-buttons-container">
+                            <button
+                                class="replay-btn"
+                                onclick="replayStep('replay2', -1)"
+                                aria-label="Previous step"
+                            >
+                                ◀
+                            </button>
+                            <button
+                                class="replay-btn play-btn"
+                                id="replay2-play"
+                                onclick="toggleAutoplay('replay2')"
+                                aria-label="Auto play"
+                            >
+                                ▶
+                            </button>
+                            <button
+                                class="replay-btn"
+                                onclick="replayStep('replay2', 1)"
+                                aria-label="Next step"
+                            >
+                                ▶
+                            </button>
+                        </div>
+                        <div class="replay-progress-container">
+                            <input
+                                type="range"
+                                class="replay-slider"
+                                id="replay2-slider"
+                                min="0"
+                                max="16"
+                                value="0"
+                                oninput="replaySlide('replay2', this.value)"
+                            />
+                            <span class="replay-progress" id="replay2-progress">
+                                0 / 16
+                            </span>
+                        </div>
+                        <div class="replay-meta">
+                            <div class="replay-meta-item">
+                                Steps: <span>17</span>
+                            </div>
+                            <div class="replay-meta-item">
+                                Duration: <span>~16 min</span>
+                            </div>
+                            <div class="replay-meta-item">
+                                Board: <span>Classic UI</span>
+                            </div>
+                            <div class="replay-meta-item">
+                                Mines: <span>38</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Game 3 -->
+                    <div class="replay-card" id="replay-3">
+                        <div class="replay-header">
+                            <h3>Game 3</h3>
+                            <span class="game-result lost">💥 Lost</span>
+                        </div>
+                        <div class="replay-viewer">
+                            <img
+                                id="replay3-img"
+                                src="runs/run_1781618466/step_0_screenshot.png"
+                                alt="Game 3 replay"
+                                loading="lazy"
+                            />
+                            <div
+                                class="autoplay-indicator"
+                                id="replay3-autoplay"
+                            >
+                                ▶ AUTO
+                            </div>
+                        </div>
+                        <div class="replay-buttons-container">
+                            <button
+                                class="replay-btn"
+                                onclick="replayStep('replay3', -1)"
+                                aria-label="Previous step"
+                            >
+                                ◀
+                            </button>
+                            <button
+                                class="replay-btn play-btn"
+                                id="replay3-play"
+                                onclick="toggleAutoplay('replay3')"
+                                aria-label="Auto play"
+                            >
+                                ▶
+                            </button>
+                            <button
+                                class="replay-btn"
+                                onclick="replayStep('replay3', 1)"
+                                aria-label="Next step"
+                            >
+                                ▶
+                            </button>
+                        </div>
+                        <div class="replay-progress-container">
+                            <input
+                                type="range"
+                                class="replay-slider"
+                                id="replay3-slider"
+                                min="0"
+                                max="12"
+                                value="0"
+                                oninput="replaySlide('replay3', this.value)"
+                            />
+                            <span class="replay-progress" id="replay3-progress">
+                                0 / 12
+                            </span>
+                        </div>
+                        <div class="replay-meta">
+                            <div class="replay-meta-item">
+                                Steps: <span>13</span>
+                            </div>
+                            <div class="replay-meta-item">
+                                Duration: <span>~15 min</span>
+                            </div>
+                            <div class="replay-meta-item">
+                                Board: <span>Classic UI</span>
+                            </div>
+                            <div class="replay-meta-item">
+                                Mines: <span>38</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- ============ LLM REASONING ============ -->
+        <section class="section" id="sec-reasoning">
+            <div class="container">
+                <div class="section-header fade-in">
+                    <span class="section-label">Inside the Model's Mind</span>
+                    <h2 class="section-title">LLM Reasoning Traces</h2>
+                    <p class="section-desc">
+                        Each tool call includes an optional
+                        <code>reason</code> parameter where the model explains
+                        its Minesweeper logic. Game 1 provided no explanations,
+                        but Games 2 and 3 show surprisingly sophisticated
+                        deductive reasoning — even though the model still lost.
+                    </p>
+                </div>
+
+                <div class="reasoning-feed fade-in">
+                    <!-- Game 1 note -->
+                    <div class="no-reason-note">
+                        <strong>Game 1</strong> — The model made all 18 moves
+                        without providing any reasoning (the
+                        <code>reason</code> parameter was not used). 0 of 18
+                        tool calls included explanations.
+                    </div>
+
+                    <!-- Game 2 reasons -->
+                    <div class="reason-item game-2">
+                        <div class="reason-header">
+                            <span class="reason-game-tag g2">Game 2</span>
+                            <span class="reason-step">
+                                Move 1 → tap(550, 1150)
+                            </span>
+                        </div>
+                        <div class="reason-text">
+                            Starting tap near the center of the board to open up
+                            some space.
+                        </div>
+                    </div>
+
+                    <div class="reason-item game-2">
+                        <div class="reason-header">
+                            <span class="reason-game-tag g2">Game 2</span>
+                            <span class="reason-step">
+                                Move 6 → tap(50, 1250)
+                            </span>
+                        </div>
+                        <div class="reason-text">
+                            C1, R13 is safe because C2, R13 is 1 and its only
+                            mine neighbor must be C2, R14 (which is the sole
+                            closed neighbor of C3, R13 = 1).
+                        </div>
+                    </div>
+
+                    <div class="reason-item game-2">
+                        <div class="reason-header">
+                            <span class="reason-game-tag g2">Game 2</span>
+                            <span class="reason-step">
+                                Move 9 → tap(150, 1150)
+                            </span>
+                        </div>
+                        <div class="reason-text">
+                            C2, R12 is a mine because C1, R12 (1) only has C2,
+                            R12 as a covered neighbor. Thus C1, R11 (1) has its
+                            mine at C2, R12, which makes C1, R10 and C2, R10
+                            safe.
+                        </div>
+                    </div>
+
+                    <div class="reason-item game-2">
+                        <div class="reason-header">
+                            <span class="reason-game-tag g2">Game 2</span>
+                            <span class="reason-step">
+                                Move 15 → tap(250, 1750)
+                            </span>
+                        </div>
+                        <div class="reason-text">
+                            Using 1-1 pattern logic: C1,R18 (1) has covered
+                            neighbors in {C1,R17, C2,R17}, so the mine is there.
+                            C2,R18 (1) is adjacent to those two and also to
+                            C3,R18 and C3,R19. Thus, C3,R18 must be safe.
+                        </div>
+                    </div>
+
+                    <div class="reason-item game-2">
+                        <div class="reason-header">
+                            <span class="reason-game-tag g2">Game 2</span>
+                            <span class="reason-step">
+                                Move 16 → tap(750, 1950) 💥
+                            </span>
+                        </div>
+                        <div class="reason-text">
+                            Using 1-1 pattern on C10, R19 (1) and C9, R19 (1),
+                            the closed neighbors of C10, R19 are a subset of C9,
+                            R19's closed neighbors, which means C8, R20 must be
+                            safe.
+                        </div>
+                    </div>
+
+                    <!-- Game 3 reasons -->
+                    <div class="reason-item game-3">
+                        <div class="reason-header">
+                            <span class="reason-game-tag g3">Game 3</span>
+                            <span class="reason-step">
+                                Move 1 → tap(550, 1150)
+                            </span>
+                        </div>
+                        <div class="reason-text">
+                            Start the game by tapping a cell near the center of
+                            the grid.
+                        </div>
+                    </div>
+
+                    <div class="reason-item game-3">
+                        <div class="reason-header">
+                            <span class="reason-game-tag g3">Game 3</span>
+                            <span class="reason-step">
+                                Move 4 → tap(300, 1400)
+                            </span>
+                        </div>
+                        <div class="reason-text">
+                            Row 14 Col 3 is safe because Row 13 Col 3 is 1 and
+                            its only mine neighbor is Row 12 Col 2 (which is a
+                            mine since Row 12 Col 3 is 2 and has only two
+                            unopened neighbors).
+                        </div>
+                    </div>
+
+                    <div class="reason-item game-3">
+                        <div class="reason-header">
+                            <span class="reason-game-tag g3">Game 3</span>
+                            <span class="reason-step">
+                                Move 7 → tap(550, 1550)
+                            </span>
+                        </div>
+                        <div class="reason-text">
+                            Row 16, Col 5 is safe based on the deduction M(16,5)
+                            + M(16,7) = 0 from the adjacent 2s in Col 6.
+                        </div>
+                    </div>
+
+                    <div class="reason-item game-3">
+                        <div class="reason-header">
+                            <span class="reason-game-tag g3">Game 3</span>
+                            <span class="reason-step">
+                                Move 8 → tap(450, 1550)
+                            </span>
+                        </div>
+                        <div class="reason-text">
+                            Row 16 Col 4 is safe because the set of unopened
+                            neighbors of the '2' at Row 15 Col 5 is a superset
+                            of the unopened neighbors of the '2' at Row 14 Col
+                            5, meaning the extra neighbors must contain 0 mines.
+                        </div>
+                    </div>
+
+                    <div class="reason-item game-3">
+                        <div class="reason-header">
+                            <span class="reason-game-tag g3">Game 3</span>
+                            <span class="reason-step">
+                                Move 12 → tap(150, 950) 💥
+                            </span>
+                        </div>
+                        <div class="reason-text">
+                            Col 2 Row 9 is safe because the adjacent '1' at Col
+                            3 Row 10 is already satisfied by the mine at Col 2
+                            Row 10.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="context-banner fade-in" style="margin-top: 32px">
+                    <span class="banner-icon">🧠</span>
+                    <div class="banner-content">
+                        <h4>The Reasoning Was Sound — The Perception Wasn't</h4>
+                        <p>
+                            The model demonstrates genuine Minesweeper strategy:
+                            subset-based mine deduction, 1-1 pattern
+                            recognition, constraint propagation, and
+                            counting-based logic. Games 2 and 3 provided
+                            <code>reason</code> fields in all 16 and 12 tool
+                            calls respectively — with increasingly sophisticated
+                            chain reasoning. The fatal errors weren't logical —
+                            they were perceptual. The model misidentified which
+                            cells were at which coordinates, or miscounted
+                            neighbors from the visual grid.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- ============ RESULTS ============ -->
+        <section class="section" id="sec-results">
+            <div class="container">
+                <div class="section-header fade-in">
+                    <span class="section-label">Results</span>
+                    <h2 class="section-title">Game Results Summary</h2>
+                    <p class="section-desc">
+                        All three games ended in a loss. The model consistently
+                        hit mines within 12-18 moves, despite the coordinate
+                        grid overlay and tool-calling architecture.
+                    </p>
+                </div>
+
+                <div class="results-table-wrap fade-in">
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Game</th>
+                                <th>Model</th>
+                                <th>Steps</th>
+                                <th>Duration</th>
+                                <th>Mines</th>
+                                <th>UI Style</th>
+                                <th>Reasons Given</th>
+                                <th>Result</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Game 1</strong></td>
+                                <td>Gemini 3.5 Flash</td>
+                                <td>19</td>
+                                <td>~23:35</td>
+                                <td>38</td>
+                                <td>Classic (Retro)</td>
+                                <td>0 / 18</td>
+                                <td>
+                                    <span
+                                        class="status-badge fail"
+                                        style="margin: 0"
+                                    >
+                                        ✕ Lost
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Game 2</strong></td>
+                                <td>Gemini 3.5 Flash</td>
+                                <td>17</td>
+                                <td>~15:54</td>
+                                <td>38</td>
+                                <td>Classic (Retro)</td>
+                                <td>16 / 16</td>
+                                <td>
+                                    <span
+                                        class="status-badge fail"
+                                        style="margin: 0"
+                                    >
+                                        ✕ Lost
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Game 3</strong></td>
+                                <td>Gemini 3.5 Flash</td>
+                                <td>13</td>
+                                <td>~15:23</td>
+                                <td>38</td>
+                                <td>Classic (Retro)</td>
+                                <td>12 / 12</td>
+                                <td>
+                                    <span
+                                        class="status-badge fail"
+                                        style="margin: 0"
+                                    >
+                                        ✕ Lost
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="context-banner fade-in" style="margin-top: 32px">
+                    <span class="banner-icon">⏱️</span>
+                    <div class="banner-content">
+                        <h4>Time Breakdown</h4>
+                        <p>
+                            Each game step involves: screenshot capture (~0.5s)
+                            → grid overlay generation (~0.3s) → API call with
+                            image (~5-15s for vision model) → action execution
+                            (~1s) → animation wait (~2s). Including network
+                            latency, each step averages 10-20 seconds. The
+                            complete games ran for approximately 15-24 minutes
+                            each, totaling roughly 55 minutes of autonomous play
+                            across all three games.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- ============ KEY TAKEAWAYS ============ -->
+        <section class="section" id="sec-findings">
+            <div class="container">
+                <div class="section-header fade-in">
+                    <span class="section-label">Analysis</span>
+                    <h2 class="section-title">Key Takeaways</h2>
+                    <p class="section-desc">
+                        Three critical insights emerged from this experiment,
+                        each with significant implications for the future of
+                        AI-driven mobile automation.
+                    </p>
+                </div>
+
+                <div class="findings-grid fade-in">
+                    <div class="card finding-card">
+                        <div class="finding-num">Takeaway 01</div>
+                        <h3>
+                            Coding Agents Can Automate Mobile, Not Just Browsers
+                        </h3>
+                        <p>
+                            The fact that an LLM could connect to a real Android
+                            device via ADB/uiautomator2, capture screenshots,
+                            reason about the UI, and execute touch actions
+                            demonstrates that
+                            <strong>
+                                mobile automation through coding agents is
+                                viable </strong
+                            >. This exposes a dramatic new set of capabilities
+                            beyond browser automation.
+                        </p>
+                    </div>
+                    <div class="card finding-card">
+                        <div class="finding-num">Takeaway 02</div>
+                        <h3>Vision-Based Computer Use Is Still Fragile</h3>
+                        <p>
+                            Despite Gemini 3.5 Flash being a strong vision
+                            model, it
+                            <strong>struggled with Minesweeper</strong> — a game
+                            that's conceptually straightforward. Vision-based
+                            "computer use" through screenshots alone is still
+                            unreliable. Just as CDP (Chrome DevTools Protocol)
+                            was a breakthrough for browser agents over pure
+                            screenshot-based approaches,
+                            <strong>
+                                mobile agents will need structured data access
+                            </strong>
+                            (like a DOM-equivalent for mobile apps) to be
+                            reliable.
+                        </p>
+                    </div>
+                    <div class="card finding-card">
+                        <div class="finding-num">Takeaway 03</div>
+                        <h3>Data Format Is The Key Differentiator</h3>
+                        <p>
+                            When given Minesweeper as text/ASCII (like the chess
+                            experiment), the model would likely solve it easily.
+                            The failure isn't in reasoning — it's in
+                            <strong>visual spatial perception</strong>. This
+                            underscores that finding ways to extract structured
+                            data from mobile UIs (rather than relying on
+                            screenshots) will be the key enabler for practical
+                            mobile AI agents.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="context-banner fade-in" style="margin-top: 32px">
+                    <span class="banner-icon">🔮</span>
+                    <div class="banner-content">
+                        <h4>The Chess Paradox</h4>
+                        <p>
+                            Gemini 3.5 Flash achieves ~1900 Elo in chess
+                            (competing with GPT-5.5) when given symbolic /
+                            text-based board representations. Yet it cannot
+                            solve even basic Minesweeper when relying on visual
+                            perception alone. This reveals a fundamental
+                            asymmetry:
+                            <strong>
+                                LLMs are powerful symbolic reasoners but weak
+                                spatial perceivers </strong
+                            >. The bottleneck for mobile automation isn't
+                            intelligence — it's the input modality.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- ============ SYSTEM DETAILS ============ -->
+        <section class="section" id="sec-system">
+            <div class="container">
+                <div class="section-header fade-in">
+                    <span class="section-label">Technical Details</span>
+                    <h2 class="section-title">System Prompt & Tools</h2>
+                    <p class="section-desc">
+                        The minimal prompt and tool definitions used for the
+                        final (tool-calling) approach.
+                    </p>
+                </div>
+
+                <div class="fade-in">
+                    <h3
+                        style="
+                            font-size: 1rem;
+                            font-weight: 700;
+                            margin-bottom: 12px;
+                            color: var(--text-primary);
+                        "
+                    >
+                        System Prompt
+                    </h3>
+                    <div class="code-block">
+                        <span class="string">
+                            "You are playing Minesweeper on an Android screen. </span
+                        ><br />
+                        <span class="string">
+                            Analyze the current grid-overlaid screenshot and use
+                            your tools to play the game. </span
+                        ><br />
+                        <span class="string">
+                            If you win or lose the game, do not call any more
+                            tools and output a message explaining the final
+                            result."
+                        </span>
+                    </div>
+                </div>
+
+                <div class="fade-in" style="margin-top: 32px">
+                    <h3
+                        style="
+                            font-size: 1rem;
+                            font-weight: 700;
+                            margin-bottom: 12px;
+                            color: var(--text-primary);
+                        "
+                    >
+                        Available Tools
+                    </h3>
+                    <div class="tech-grid">
+                        <div class="tech-item">
+                            <span class="tech-icon">👆</span>
+                            <div>
+                                <div class="tech-name">tap(x, y, reason?)</div>
+                                <div class="tech-role">
+                                    Tap at screen coordinates
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tech-item">
+                            <span class="tech-icon">👇</span>
+                            <div>
+                                <div class="tech-name">
+                                    long_press(x, y, ms?, reason?)
+                                </div>
+                                <div class="tech-role">
+                                    Long press for flagging
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tech-item">
+                            <span class="tech-icon">🔍</span>
+                            <div>
+                                <div class="tech-name">zoom_in(reason?)</div>
+                                <div class="tech-role">
+                                    Pinch-out to zoom in
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tech-item">
+                            <span class="tech-icon">🔭</span>
+                            <div>
+                                <div class="tech-name">zoom_out(reason?)</div>
+                                <div class="tech-role">
+                                    Pinch-in to zoom out
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fade-in" style="margin-top: 32px">
+                    <h3
+                        style="
+                            font-size: 1rem;
+                            font-weight: 700;
+                            margin-bottom: 12px;
+                            color: var(--text-primary);
+                        "
+                    >
+                        Coordinate Grid System
+                    </h3>
+                    <p
+                        style="
+                            color: var(--text-secondary);
+                            font-size: 0.92rem;
+                            line-height: 1.7;
+                        "
+                    >
+                        Every screenshot was overlaid with a
+                        <strong>100px red coordinate grid</strong> before being
+                        sent to the model. This grid draws lines every 100
+                        pixels, labels axis values along the edges, and plots
+                        coordinate text labels (e.g., "200,400") at every 100px
+                        intersection with a white dot marker. This was crucial —
+                        without it, the model hallucinated coordinates entirely
+                        and couldn't interact with the game at all. The Python
+                        implementation for generating this coordinate overlay
+                        can be viewed in
+                        <a
+                            href="https://github.com/PythonicVarun/research/blob/master/llm-minesweeper/image_utils.py"
+                            class="inline-link"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            image_utils.py ↗ </a
+                        >.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- ============ FOOTER ============ -->
+        <footer class="footer" id="sec-footer">
+            <div class="container">
+                <p>
+                    Experiment by
+                    <strong>
+                        <a
+                            href="https://github.com/PythonicVarun"
+                            target="_blank"
+                        >
+                            Varun Agnihotri
+                        </a>
+                    </strong>
+                </p>
+                <p style="margin-top: 8px">
+                    Built with
+                    <a
+                        href="https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash"
+                        target="_blank"
+                    >
+                        Gemini 3.5 Flash
+                    </a>
+                    ·
+                    <a
+                        href="https://developer.android.com/tools/adb"
+                        target="_blank"
+                    >
+                        ADB
+                    </a>
+                    ·
+                    <a
+                        href="https://pypi.org/project/uiautomator2"
+                        target="_blank"
+                    >
+                        uiautomator2
+                    </a>
+                    · <a href="https://python.org/" target="_blank">Python</a>
+                </p>
+                <p style="margin-top: 12px">
+                    <a
+                        href="https://pythonicvarun.github.io/llm-chess-evaluation-harness/"
+                        target="_blank"
+                    >
+                        Chess Benchmark ↗
+                    </a>
+                    &nbsp;&nbsp;·&nbsp;&nbsp;
+                    <a
+                        href="https://github.com/PythonicVarun/research/tree/master/llm-minesweeper"
+                        target="_blank"
+                    >
+                        GitHub ↗
+                    </a>
+                </p>
+            </div>
+        </footer>
+
+        <script>
+            // ===== THEME TOGGLE =====
+            function toggleTheme(event) {
+                const isTransitionable =
+                    document.startViewTransition &&
+                    !window.matchMedia("(prefers-reduced-motion: reduce)")
+                        .matches;
+                if (!isTransitionable) {
+                    const isLight =
+                        document.documentElement.classList.toggle(
+                            "light-theme",
+                        );
+                    localStorage.setItem("theme", isLight ? "light" : "dark");
+                    return;
+                }
+                let x = window.innerWidth / 2,
+                    y = window.innerHeight / 2;
+                if (event) {
+                    x = event.clientX;
+                    y = event.clientY;
+                }
+                const endRadius = Math.hypot(
+                    Math.max(x, window.innerWidth - x),
+                    Math.max(y, window.innerHeight - y),
+                );
+                const transition = document.startViewTransition(() => {
+                    const isLight =
+                        document.documentElement.classList.toggle(
+                            "light-theme",
+                        );
+                    localStorage.setItem("theme", isLight ? "light" : "dark");
+                });
+                transition.ready.then(() => {
+                    document.documentElement.animate(
+                        {
+                            clipPath: [
+                                `circle(0px at ${x}px ${y}px)`,
+                                `circle(${endRadius}px at ${x}px ${y}px)`,
+                            ],
+                        },
+                        {
+                            duration: 650,
+                            easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+                            pseudoElement: "::view-transition-new(root)",
+                        },
+                    );
+                });
+            }
+
+            // ===== GAME REPLAY SYSTEM =====
+            const replayState = {
+                replay1: {
+                    current: 0,
+                    max: 18,
+                    dir: "run_1781509310",
+                    playing: false,
+                    interval: null,
+                },
+                replay2: {
+                    current: 0,
+                    max: 16,
+                    dir: "run_1781616187",
+                    playing: false,
+                    interval: null,
+                },
+                replay3: {
+                    current: 0,
+                    max: 12,
+                    dir: "run_1781618466",
+                    playing: false,
+                    interval: null,
+                },
+            };
+
+            function updateReplayUI(id) {
+                const state = replayState[id];
+                document.getElementById(`${id}-img`).src =
+                    `runs/${state.dir}/step_${state.current}_screenshot.png`;
+                document.getElementById(`${id}-progress`).textContent =
+                    `${state.current} / ${state.max}`;
+                document.getElementById(`${id}-slider`).value = state.current;
+            }
+
+            function replayStep(id, dir) {
+                const state = replayState[id];
+                state.current = Math.max(
+                    0,
+                    Math.min(state.max, state.current + dir),
+                );
+                updateReplayUI(id);
+            }
+
+            function replaySlide(id, val) {
+                replayState[id].current = parseInt(val);
+                updateReplayUI(id);
+            }
+
+            function toggleAutoplay(id) {
+                const state = replayState[id];
+                const btn = document.getElementById(`${id}-play`);
+                const indicator = document.getElementById(`${id}-autoplay`);
+
+                if (state.playing) {
+                    clearInterval(state.interval);
+                    state.playing = false;
+                    btn.textContent = "▶";
+                    indicator.classList.remove("visible");
+                } else {
+                    if (state.current >= state.max) state.current = 0;
+                    state.playing = true;
+                    btn.textContent = "⏸";
+                    indicator.classList.add("visible");
+                    state.interval = setInterval(() => {
+                        if (state.current >= state.max) {
+                            clearInterval(state.interval);
+                            state.playing = false;
+                            btn.textContent = "▶";
+                            indicator.classList.remove("visible");
+                            return;
+                        }
+                        state.current++;
+                        updateReplayUI(id);
+                    }, 400); // ~2.5 steps per second
+                }
+            }
+
+            // ===== SCROLL ANIMATIONS =====
+            const observer = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add("visible");
+                        }
+                    });
+                },
+                { threshold: 0.1, rootMargin: "0px 0px -40px 0px" },
+            );
+
+            document
+                .querySelectorAll(".fade-in")
+                .forEach((el) => observer.observe(el));
+
+            // ===== NAV DOTS =====
+            const sections = [
+                "sec-hero",
+                "sec-context",
+                "sec-tech",
+                "sec-approaches",
+                "sec-ui",
+                "sec-replays",
+                "sec-reasoning",
+                "sec-results",
+                "sec-findings",
+                "sec-system",
+            ];
+            const sectionLabels = {
+                "sec-hero": "Top",
+                "sec-context": "Background",
+                "sec-tech": "Infrastructure",
+                "sec-approaches": "Methodology",
+                "sec-ui": "UI Comparison",
+                "sec-replays": "Replays",
+                "sec-reasoning": "Model Reasoning",
+                "sec-results": "Results Summary",
+                "sec-findings": "Key Takeaways",
+                "sec-system": "System & Tools",
+            };
+            const dotsContainer = document.getElementById("navDots");
+            sections.forEach((id, i) => {
+                const wrapper = document.createElement("div");
+                wrapper.className = "nav-dot-wrapper";
+
+                const label = document.createElement("span");
+                label.className = "nav-label";
+                label.textContent = sectionLabels[id];
+
+                const dot = document.createElement("button");
+                dot.className = "nav-dot";
+                dot.setAttribute(
+                    "aria-label",
+                    `Go to section: ${sectionLabels[id]}`,
+                );
+                dot.onclick = () =>
+                    document
+                        .getElementById(id)
+                        .scrollIntoView({ behavior: "smooth" });
+
+                wrapper.appendChild(label);
+                wrapper.appendChild(dot);
+                dotsContainer.appendChild(wrapper);
+            });
+
+            const navObserver = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            const idx = sections.indexOf(entry.target.id);
+                            document
+                                .querySelectorAll(".nav-dot")
+                                .forEach((d, i) => {
+                                    d.classList.toggle("active", i === idx);
+                                });
+                        }
+                    });
+                },
+                { threshold: 0.3 },
+            );
+
+            sections.forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) navObserver.observe(el);
+            });
+        </script>
+    </body>
+</html>
