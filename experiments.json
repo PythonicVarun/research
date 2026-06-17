@@ -1,22 +1,55 @@
 [
     {
-        "id": "EXP-001",
         "status": "published",
         "icon": "💣",
         "title": "LLM Minesweeper Benchmark",
         "desc": "Can Gemini 2.0 Flash play Minesweeper on a real Android device via ADB and uiautomator2? Step-by-step game replays with findings on vision-driven mobile automation.",
         "tags": ["LLM", "Vision", "Android", "ADB", "Gemini", "Benchmark"],
         "date": "2026-06-17",
-        "url": "./llm-minesweeper/"
+        "url": "./llm-minesweeper/",
+        "github": "https://github.com/PythonicVarun/research/tree/master/llm-minesweeper"
     },
     {
-        "id": "EXP-002",
-        "status": "wip",
-        "icon": "🔬",
-        "title": "Next experiment",
-        "desc": "Another experiment is cooking. Check back soon, or watch the repo for commits.",
-        "tags": ["TBD"],
-        "date": "",
-        "url": ""
+        "status": "published",
+        "icon": "♟️",
+        "title": "LLM Chess Evaluation Harness",
+        "desc": "A sophisticated evaluation framework for testing the chess-playing capabilities of Large Language Models (LLMs) against Stockfish. Uses MCP server and TUI dashboard.",
+        "tags": ["LLM", "Chess", "Stockfish", "TUI", "MCP", "Framework"],
+        "date": "2026-06-03",
+        "url": "./llm-chess/",
+        "github": "https://github.com/PythonicVarun/llm-chess-evaluation-harness"
+    },
+    {
+        "status": "published",
+        "icon": "🌏",
+        "title": "Environmental Change Insights",
+        "desc": "A curated collection of major ecological disruptions and urban terraforming events detected across our study regions using OlmoEarth satellite data.",
+        "tags": [
+            "Satellite",
+            "OlmoEarth",
+            "Change-Detection",
+            "Geospatial",
+            "Insights"
+        ],
+        "date": "2026-05-26",
+        "url": "./geospatial-insights/",
+        "github": "https://github.com/PythonicVarun/olmoearth-change-insights"
+    },
+    {
+        "status": "published",
+        "icon": "🔌",
+        "title": "Circuit Lab - LLM × Wokwi",
+        "desc": "A purely-browser playground that lets any OpenAI-compatible LLM generate complete Wokwi simulation projects from natural-language prompts, and runs them live in an embedded Wokwi simulator.",
+        "tags": [
+            "LLM",
+            "Wokwi",
+            "Simulator",
+            "Arduino",
+            "Playground",
+            "Pure-Browser"
+        ],
+        "date": "2026-05-28",
+        "url": "./llm-circuit-builder/",
+        "github": "https://github.com/PythonicVarun/llm-circuit-builder"
     }
 ]
