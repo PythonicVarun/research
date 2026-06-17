@@ -1,55 +1,92 @@
 [
-    {
-        "status": "published",
-        "icon": "💣",
-        "title": "LLM Minesweeper Benchmark",
-        "desc": "Can Gemini 2.0 Flash play Minesweeper on a real Android device via ADB and uiautomator2? Step-by-step game replays with findings on vision-driven mobile automation.",
-        "tags": ["LLM", "Vision", "Android", "ADB", "Gemini", "Benchmark"],
-        "date": "2026-06-17",
-        "url": "./llm-minesweeper/",
-        "github": "https://github.com/PythonicVarun/research/tree/master/llm-minesweeper"
-    },
-    {
-        "status": "published",
-        "icon": "♟️",
-        "title": "LLM Chess Evaluation Harness",
-        "desc": "A sophisticated evaluation framework for testing the chess-playing capabilities of Large Language Models (LLMs) against Stockfish. Uses MCP server and TUI dashboard.",
-        "tags": ["LLM", "Chess", "Stockfish", "TUI", "MCP", "Framework"],
-        "date": "2026-06-03",
-        "url": "./llm-chess/",
-        "github": "https://github.com/PythonicVarun/llm-chess-evaluation-harness"
-    },
-    {
-        "status": "published",
-        "icon": "🌏",
-        "title": "Environmental Change Insights",
-        "desc": "A curated collection of major ecological disruptions and urban terraforming events detected across our study regions using OlmoEarth satellite data.",
-        "tags": [
-            "Satellite",
-            "OlmoEarth",
-            "Change-Detection",
-            "Geospatial",
-            "Insights"
-        ],
-        "date": "2026-05-26",
-        "url": "./geospatial-insights/",
-        "github": "https://github.com/PythonicVarun/olmoearth-change-insights"
-    },
-    {
-        "status": "published",
-        "icon": "🔌",
-        "title": "Circuit Lab - LLM × Wokwi",
-        "desc": "A purely-browser playground that lets any OpenAI-compatible LLM generate complete Wokwi simulation projects from natural-language prompts, and runs them live in an embedded Wokwi simulator.",
-        "tags": [
-            "LLM",
-            "Wokwi",
-            "Simulator",
-            "Arduino",
-            "Playground",
-            "Pure-Browser"
-        ],
-        "date": "2026-05-28",
-        "url": "./llm-circuit-builder/",
-        "github": "https://github.com/PythonicVarun/llm-circuit-builder"
-    }
+  {
+    "status": "published",
+    "icon": "💣",
+    "title": "LLM Minesweeper Benchmark",
+    "desc": "Can Gemini 2.0 Flash play Minesweeper on a real Android device via ADB and uiautomator2? Step-by-step game replays with findings on vision-driven mobile automation.",
+    "tags": ["LLM", "Benchmark", "Computer-Vision", "Android", "ADB", "uiautomator2", "Python"],
+    "date": "2026-06-17",
+    "url": "./llm-minesweeper/",
+    "github": "https://github.com/PythonicVarun/research/tree/master/llm-minesweeper"
+  },
+  {
+    "status": "published",
+    "icon": "♟️",
+    "title": "LLM Chess Evaluation Harness",
+    "desc": "A sophisticated evaluation framework for testing the chess-playing capabilities of Large Language Models (LLMs) against Stockfish. Uses MCP server and TUI dashboard.",
+    "tags": ["LLM", "Benchmark", "Stockfish", "MCP-Server", "TUI-Dashboard", "Python", "Chess"],
+    "date": "2026-06-16",
+    "url": "./llm-chess/",
+    "github": "https://github.com/PythonicVarun/llm-chess-evaluation-harness"
+  },
+  {
+    "status": "published",
+    "icon": "🌏",
+    "title": "Environmental Change Insights",
+    "desc": "A curated collection of major ecological disruptions and urban terraforming events detected across our study regions using OlmoEarth satellite data.",
+    "tags": ["Geospatial-AI", "OlmoEarth", "Satellite-Imagery", "Change-Detection", "Raster-Analysis", "Data-Analysis", "Visualization"],
+    "date": "2026-06-12",
+    "url": "https://pythonicvarun.github.io/olmoearth-change-insights/",
+    "github": "https://github.com/PythonicVarun/olmoearth-change-insights"
+  },
+  {
+    "status": "published",
+    "icon": "🔌",
+    "title": "Circuit Lab - LLM × Wokwi",
+    "desc": "A purely-browser playground that lets any OpenAI-compatible LLM generate complete Wokwi simulation projects from natural-language prompts, and runs them live in an embedded Wokwi simulator.",
+    "tags": ["LLM", "LLM-Code-Gen", "Wokwi-Simulation", "Embedded-Systems", "Browser-Runtime"],
+    "date": "2026-05-28",
+    "url": "./llm-circuit-builder/",
+    "github": "https://github.com/PythonicVarun/llm-circuit-builder"
+  },
+  {
+    "status": "published",
+    "icon": "🎙️",
+    "title": "ASR Transcription Benchmark",
+    "desc": "Multi-model Automatic Speech Recognition (ASR) benchmarking suite testing OpenAI Whisper Realtime, Gemma, and Gemini models across clean baseline, noise, multi-speaker, and accent variations.",
+    "tags": ["LLM", "Benchmark", "ASR-Evaluation", "Whisper-Realtime", "Speech-to-Text", "Python"],
+    "date": "2026-05-15",
+    "url": "https://pythonicvarun.github.io/llm-audio-transcription-benchmark/",
+    "github": "https://github.com/PythonicVarun/llm-audio-transcription-benchmark"
+  },
+  {
+    "status": "published",
+    "icon": "🐍",
+    "title": "Python Libraries Analysis",
+    "desc": "Static code quality audit of the most-downloaded PyPI libraries. Analyzes severity mapping using ty (Astral) and visualizes results via interactive error-density treemaps.",
+    "tags": ["Python", "Static-Analysis", "AST-Parsing", "ClickHouse", "Data-Analysis", "Visualization"],
+    "date": "2026-01-25",
+    "url": "https://pythonicvarun.github.io/py-libraries-analysis/",
+    "github": "https://github.com/PythonicVarun/py-libraries-analysis"
+  },
+  {
+    "status": "published",
+    "icon": "🐧",
+    "title": "Linux Foundation Leaderboards Analysis",
+    "desc": "An independent analysis of LFX Insights Leaderboards evaluating team efficiency, burnout risk, sustainability, and bus factors across the Linux Foundation open source ecosystem.",
+    "tags": ["Python", "Interactive-Notebooks", "Pandas", "Altair", "Marimo", "Data-Analysis", "Visualization"],
+    "date": "2026-01-09",
+    "url": "https://pythonicvarun.github.io/LinuxFoundation-Leaderboards-Analysis/",
+    "github": "https://github.com/PythonicVarun/LinuxFoundation-Leaderboards-Analysis"
+  },
+  {
+    "status": "published",
+    "icon": "💎",
+    "title": "Gemma Token Stochasticity Analysis",
+    "desc": "Explores the internal stochastic generation processes of Gemma models by extracting transition scores and logits, featuring D3.js visualizers for guided token generation and branching decision trees.",
+    "tags": ["LLM", "HuggingFace", "Logit-Analysis", "Logprobs", "D3.js", "Data-Analysis", "Visualization"],
+    "date": "2026-01-20",
+    "url": "https://pythonicvarun.github.io/gemma-token-analysis/",
+    "github": "https://github.com/PythonicVarun/gemma-token-analysis"
+  },
+  {
+    "status": "published",
+    "icon": "📚",
+    "title": "AI-Powered Textbook Fact-Checking",
+    "desc": "An agentic fact-checking system designed to verify textbooks and technical documentation. Utilizes multi-agent extraction, deep web search, and structured verification reports.",
+    "tags": ["LLM", "Agentic-RAG", "Multi-Agent-Systems", "Claim-Extraction", "Fact-Verification", "Python"],
+    "date": "2026-01-22",
+    "url": "https://pythonicvarun.github.io/textbook-analysis/",
+    "github": "https://github.com/PythonicVarun/textbook-analysis"
+  }
 ]

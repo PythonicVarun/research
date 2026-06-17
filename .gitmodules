@@ -4,7 +4,3 @@
 [submodule "llm-circuit-builder"]
 	path = llm-circuit-builder
 	url = https://github.com/PythonicVarun/llm-circuit-builder.git
-[submodule "geospatial-insights"]
-	path = geospatial-insights
-	url = https://github.com/PythonicVarun/olmoearth-change-insights.git
-	branch = feat/pmtiles-v2
