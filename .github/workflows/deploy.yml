@@ -41,7 +41,7 @@ jobs:
 
             - name: Minify static files
               run: |
-                  find _site -type f \( -name "*.html" -o -name "*.css" -o -name "*.js" -o -name "*.json" \) -exec minify -o {} {} \;
+                  find . -type f \( -name "*.html" -o -name "*.css" -o -name "*.js" -o -name "*.json" \) -exec minify -o {} {} \;
 
             - name: Setup Pages
               uses: actions/configure-pages@v6
