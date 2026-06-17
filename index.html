@@ -36,9 +36,12 @@
                 --text-primary: #e8e8f0;
                 --text-secondary: #9a9ab0;
                 --text-muted: #6a6a80;
-                --accent-1: #7c5cfc; /* purple */
-                --accent-2: #5c8afc; /* blue */
-                --accent-3: #fc5c8a; /* pink */
+                --accent-1: #7c5cfc;
+                /* purple */
+                --accent-2: #5c8afc;
+                /* blue */
+                --accent-3: #fc5c8a;
+                /* pink */
                 --accent-ok: #4cdb8a;
                 --accent-warn: #fcb85c;
                 --border: rgba(124, 92, 252, 0.18);
@@ -70,9 +73,12 @@
                 --text-primary: #1a1a2e;
                 --text-secondary: #555570;
                 --text-muted: #888898;
-                --accent-1: #6a4ce0; /* purple */
-                --accent-2: #4a72e0; /* blue */
-                --accent-3: #e04a72; /* pink */
+                --accent-1: #6a4ce0;
+                /* purple */
+                --accent-2: #4a72e0;
+                /* blue */
+                --accent-3: #e04a72;
+                /* pink */
                 --accent-ok: #2aaa66;
                 --accent-warn: #d9952a;
                 --border: rgba(106, 76, 224, 0.2);
@@ -895,6 +901,274 @@
                     transition: none !important;
                 }
             }
+
+            /* ===== ACTIVITY HEATMAP ===== */
+            .heatmap-card {
+                background-image: var(--gradient-card);
+                background-color: var(--bg-card);
+                border: 1px solid var(--border-subtle);
+                border-radius: 14px;
+                padding: 24px;
+                margin-bottom: 48px;
+                position: relative;
+                box-shadow: var(--shadow-card);
+                transition:
+                    border-color 0.4s,
+                    box-shadow 0.4s;
+            }
+
+            .heatmap-card:hover {
+                border-color: var(--border);
+                box-shadow: var(--shadow-card), var(--shadow-glow);
+            }
+
+            .heatmap-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            .heatmap-header-left {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .heatmap-title {
+                font-family: var(--font-mono);
+                font-size: 0.72rem;
+                font-weight: 600;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: var(--text-muted);
+            }
+
+            .heatmap-subtitle {
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: var(--text-primary);
+            }
+
+            .heatmap-header-right {
+                font-family: var(--font-mono);
+                font-size: 0.68rem;
+                color: var(--text-muted);
+            }
+
+            .heatmap-container-outer {
+                width: 100%;
+                overflow-x: auto;
+                padding-bottom: 8px;
+                margin-bottom: 16px;
+            }
+
+            /* Custom scrollbar for heatmap scroll */
+            .heatmap-container-outer::-webkit-scrollbar {
+                height: 6px;
+            }
+
+            .heatmap-container-outer::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .heatmap-container-outer::-webkit-scrollbar-thumb {
+                background: var(--border-subtle);
+                border-radius: 3px;
+                transition: background 0.2s;
+            }
+
+            .heatmap-container-outer::-webkit-scrollbar-thumb:hover {
+                background: var(--border);
+            }
+
+            .heatmap-container-inner {
+                width: max-content;
+                margin: 0 auto;
+                padding: 4px 0;
+            }
+
+            .heatmap-months-labels {
+                position: relative;
+                margin-left: 32px;
+                margin-bottom: 6px;
+                font-family: var(--font-mono);
+                font-size: 0.65rem;
+                color: var(--text-muted);
+                height: 14px;
+                line-height: 14px;
+            }
+
+            .heatmap-months-labels span {
+                position: absolute;
+            }
+
+            .heatmap-grid-wrapper {
+                display: flex;
+                gap: 8px;
+                align-items: flex-start;
+            }
+
+            .heatmap-weekdays-labels {
+                display: grid;
+                grid-template-rows: repeat(7, 10px);
+                gap: 3px;
+                width: 24px;
+                text-align: right;
+                font-family: var(--font-mono);
+                font-size: 0.65rem;
+                color: var(--text-muted);
+                line-height: 10px;
+            }
+
+            .heatmap-grid {
+                display: grid;
+                grid-template-rows: repeat(7, 10px);
+                grid-template-columns: repeat(53, 10px);
+                grid-auto-flow: column;
+                gap: 3px;
+            }
+
+            .heatmap-cell {
+                width: 10px;
+                height: 10px;
+                border-radius: 2px;
+                background-color: var(--border-subtle);
+                transition:
+                    background-color 0.25s,
+                    transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+                cursor: pointer;
+            }
+
+            .heatmap-cell:hover {
+                transform: scale(1.3);
+                box-shadow: 0 0 8px var(--accent-1);
+                z-index: 2;
+            }
+
+            .heatmap-cell.future {
+                visibility: hidden;
+                pointer-events: none;
+            }
+
+            .heatmap-cell.level-0 {
+                background-color: var(--border-subtle);
+            }
+
+            .heatmap-cell.level-1 {
+                background-color: rgba(124, 92, 252, 0.25);
+            }
+
+            .heatmap-cell.level-2 {
+                background-color: rgba(124, 92, 252, 0.5);
+            }
+
+            .heatmap-cell.level-3 {
+                background-color: rgba(124, 92, 252, 0.75);
+            }
+
+            .heatmap-cell.level-4 {
+                background-color: var(--accent-1);
+            }
+
+            html.light-theme .heatmap-cell.level-1 {
+                background-color: rgba(106, 76, 224, 0.2);
+            }
+
+            html.light-theme .heatmap-cell.level-2 {
+                background-color: rgba(106, 76, 224, 0.45);
+            }
+
+            html.light-theme .heatmap-cell.level-3 {
+                background-color: rgba(106, 76, 224, 0.7);
+            }
+
+            .heatmap-footer {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                font-family: var(--font-mono);
+                font-size: 0.68rem;
+                color: var(--text-muted);
+                flex-wrap: wrap;
+                gap: 12px;
+                border-top: 1px solid var(--border-subtle);
+                padding-top: 16px;
+            }
+
+            .heatmap-legend {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .legend-cells {
+                display: flex;
+                gap: 3px;
+            }
+
+            .legend-cell {
+                width: 10px;
+                height: 10px;
+                border-radius: 2px;
+            }
+
+            .legend-cell.level-0 {
+                background-color: var(--border-subtle);
+            }
+
+            .legend-cell.level-1 {
+                background-color: rgba(124, 92, 252, 0.25);
+            }
+
+            .legend-cell.level-2 {
+                background-color: rgba(124, 92, 252, 0.5);
+            }
+
+            .legend-cell.level-3 {
+                background-color: rgba(124, 92, 252, 0.75);
+            }
+
+            .legend-cell.level-4 {
+                background-color: var(--accent-1);
+            }
+
+            html.light-theme .legend-cell.level-1 {
+                background-color: rgba(106, 76, 224, 0.2);
+            }
+
+            html.light-theme .legend-cell.level-2 {
+                background-color: rgba(106, 76, 224, 0.45);
+            }
+
+            html.light-theme .legend-cell.level-3 {
+                background-color: rgba(106, 76, 224, 0.7);
+            }
+
+            .heatmap-tooltip {
+                position: absolute;
+                background-color: rgba(10, 10, 15, 0.95);
+                color: var(--text-primary);
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 0.7rem;
+                font-family: var(--font-mono);
+                white-space: nowrap;
+                pointer-events: none;
+                opacity: 0;
+                transition: opacity 0.15s ease;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+                border: 1px solid var(--border);
+                z-index: 100;
+            }
+
+            html.light-theme .heatmap-tooltip {
+                background-color: rgba(255, 255, 255, 0.95);
+                color: var(--text-primary);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
         </style>
     </head>
 
@@ -974,6 +1248,71 @@
         <!-- experiments -->
         <section class="section">
             <div class="wrap">
+                <!-- activity heatmap -->
+                <div
+                    class="heatmap-card"
+                    id="heatmapCard"
+                    style="display: none"
+                >
+                    <div class="heatmap-header">
+                        <div class="heatmap-header-left">
+                            <span class="heatmap-title">RESEARCH PULSE</span>
+                            <span class="heatmap-subtitle" id="heatmapTotal">
+                                Calculating recent activity...
+                            </span>
+                        </div>
+                        <div
+                            class="heatmap-header-right"
+                            id="heatmapStatus"
+                        ></div>
+                    </div>
+                    <div class="heatmap-container-outer">
+                        <div class="heatmap-container-inner">
+                            <div
+                                class="heatmap-months-labels"
+                                id="heatmapMonths"
+                            ></div>
+                            <div class="heatmap-grid-wrapper">
+                                <div class="heatmap-weekdays-labels">
+                                    <div></div>
+                                    <div>Mon</div>
+                                    <div></div>
+                                    <div>Wed</div>
+                                    <div></div>
+                                    <div>Fri</div>
+                                    <div></div>
+                                </div>
+                                <div
+                                    class="heatmap-grid"
+                                    id="heatmapGrid"
+                                ></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="heatmap-footer">
+                        <span class="heatmap-notes">
+                            * Aggregating commits ONLY across research
+                            repositories over the last 365 days
+                        </span>
+                        <div class="heatmap-legend">
+                            <span>Less</span>
+                            <div class="legend-cells">
+                                <div class="legend-cell level-0"></div>
+                                <div class="legend-cell level-1"></div>
+                                <div class="legend-cell level-2"></div>
+                                <div class="legend-cell level-3"></div>
+                                <div class="legend-cell level-4"></div>
+                            </div>
+                            <span>More</span>
+                        </div>
+                    </div>
+                    <div
+                        id="heatmapTooltip"
+                        class="heatmap-tooltip"
+                        style="opacity: 0"
+                    ></div>
+                </div>
+
                 <div class="section-header">
                     <span class="section-title">Experiments</span>
                     <span class="section-count" id="totalCount">1 total</span>
@@ -1350,7 +1689,8 @@
                 container.appendChild(wipCard);
 
                 // Update counts on load
-                document.getElementById("pubCount").textContent = published.length;
+                document.getElementById("pubCount").textContent =
+                    published.length;
 
                 // Initialize tags filter options and render initial state
                 initTags();
@@ -1389,8 +1729,206 @@
                 filterProjects();
             });
 
+            // ===== CONTRIBUTIONS HEATMAP LOGIC =====
+            function formatTooltipDate(date) {
+                const months = [
+                    "Jan",
+                    "Feb",
+                    "Mar",
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep",
+                    "Oct",
+                    "Nov",
+                    "Dec",
+                ];
+                return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+            }
+
+            function formatTimeAgo(isoString) {
+                if (!isoString) return "";
+                const date = new Date(isoString);
+                const now = new Date();
+                const seconds = Math.floor((now - date) / 1000);
+                if (seconds < 60) return "Just now";
+                const minutes = Math.floor(seconds / 60);
+                if (minutes < 60) return `${minutes}m ago`;
+                const hours = Math.floor(minutes / 60);
+                if (hours < 24) return `${hours}h ago`;
+                const days = Math.floor(hours / 24);
+                return `${days}d ago`;
+            }
+
+            function renderHeatmap(data) {
+                const contributions = data.contributions || {};
+                const grid = document.getElementById("heatmapGrid");
+                const monthsContainer =
+                    document.getElementById("heatmapMonths");
+                const card = document.getElementById("heatmapCard");
+                const totalLabel = document.getElementById("heatmapTotal");
+                const statusLabel = document.getElementById("heatmapStatus");
+
+                if (!grid || !monthsContainer || !card) return;
+
+                grid.innerHTML = "";
+                monthsContainer.innerHTML = "";
+
+                // Calculate total count
+                let totalCommits = 0;
+                Object.values(contributions).forEach((count) => {
+                    totalCommits += count;
+                });
+
+                totalLabel.textContent = `${totalCommits} contributions in the last year`;
+                if (data.updated_at) {
+                    statusLabel.textContent = `Updated ${formatTimeAgo(data.updated_at)}`;
+                }
+
+                // Grid calculations (53 weeks * 7 days = 371 cells)
+                const today = new Date();
+                const endDate = new Date(today);
+                // Align grid to end on Saturday of current week
+                endDate.setDate(today.getDate() + (6 - today.getDay()));
+
+                const startDate = new Date(endDate);
+                startDate.setDate(endDate.getDate() - 370);
+
+                const monthNames = [
+                    "Jan",
+                    "Feb",
+                    "Mar",
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep",
+                    "Oct",
+                    "Nov",
+                    "Dec",
+                ];
+                let lastMonth = -1;
+
+                // Render 371 cells
+                for (let i = 0; i <= 370; i++) {
+                    const current = new Date(startDate);
+                    current.setDate(startDate.getDate() + i);
+
+                    const month = current.getMonth();
+                    const weekIndex = Math.floor(i / 7);
+
+                    // Month label placement (first Sunday of a new month)
+                    if (i % 7 === 0 && month !== lastMonth) {
+                        const span = document.createElement("span");
+                        span.textContent = monthNames[month];
+                        span.style.left = `${weekIndex * 13}px`;
+                        monthsContainer.appendChild(span);
+                        lastMonth = month;
+                    }
+
+                    // Format as YYYY-MM-DD in local time
+                    const yearStr = current.getFullYear();
+                    const monthStr = String(current.getMonth() + 1).padStart(
+                        2,
+                        "0",
+                    );
+                    const dateStr = String(current.getDate()).padStart(2, "0");
+                    const key = `${yearStr}-${monthStr}-${dateStr}`;
+
+                    const cell = document.createElement("div");
+                    cell.className = "heatmap-cell";
+
+                    if (current > today) {
+                        cell.classList.add("future");
+                    } else {
+                        const count = contributions[key] || 0;
+                        let level = 0;
+                        if (count >= 11) level = 4;
+                        else if (count >= 7) level = 3;
+                        else if (count >= 4) level = 2;
+                        else if (count >= 1) level = 1;
+
+                        cell.classList.add(`level-${level}`);
+                        cell.setAttribute("data-date", key);
+                        cell.setAttribute("data-count", count);
+                        cell.setAttribute(
+                            "data-tooltip",
+                            `${count} contribution${count === 1 ? "" : "s"} on ${formatTooltipDate(current)}`,
+                        );
+                    }
+
+                    grid.appendChild(cell);
+                }
+
+                // Tooltip mouse event tracking
+                const tooltip = document.getElementById("heatmapTooltip");
+                grid.addEventListener("mouseover", (e) => {
+                    const cell = e.target.closest(".heatmap-cell");
+                    if (!cell || cell.classList.contains("future")) return;
+
+                    const text = cell.getAttribute("data-tooltip");
+                    if (!text) return;
+
+                    tooltip.textContent = text;
+                    tooltip.style.opacity = "1";
+
+                    const rect = cell.getBoundingClientRect();
+                    const cardRect = card.getBoundingClientRect();
+
+                    const top =
+                        rect.top - cardRect.top - tooltip.offsetHeight - 8;
+                    const left =
+                        rect.left -
+                        cardRect.left +
+                        rect.width / 2 -
+                        tooltip.offsetWidth / 2;
+
+                    tooltip.style.top = `${top}px`;
+                    tooltip.style.left = `${left}px`;
+                });
+
+                grid.addEventListener("mouseout", () => {
+                    tooltip.style.opacity = "0";
+                });
+
+                // Display the card
+                card.style.display = "block";
+
+                // Scroll the container to the end (most recent) on load
+                const scrollOuter = card.querySelector(
+                    ".heatmap-container-outer",
+                );
+                if (scrollOuter) {
+                    requestAnimationFrame(() => {
+                        scrollOuter.scrollLeft = scrollOuter.scrollWidth;
+                    });
+                }
+            }
+
+            async function loadContributions() {
+                try {
+                    const response = await fetch("contributions.json");
+                    if (!response.ok) {
+                        throw new Error(
+                            `Failed to load contributions.json: ${response.statusText}`,
+                        );
+                    }
+                    const data = await response.json();
+                    renderHeatmap(data);
+                } catch (error) {
+                    console.error("Error loading contributions:", error);
+                    // Fail silently so the rest of the page still functions fine
+                    const card = document.getElementById("heatmapCard");
+                    if (card) card.style.display = "none";
+                }
+            }
+
             // Initialize on load
             loadExperiments();
+            loadContributions();
         </script>
     </body>
 </html>
