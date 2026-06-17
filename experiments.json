@@ -155,5 +155,79 @@
         "date": "2026-01-22",
         "url": "https://pythonicvarun.github.io/textbook-analysis/",
         "github": "https://github.com/PythonicVarun/textbook-analysis"
+    },
+    {
+        "status": "published",
+        "icon": "💻",
+        "title": "Remote Coding Agents",
+        "desc": "A self-hosted web workbench featuring a live file tree, terminal, and chat panel for running, orchestrating, and observing containerized AI coding agents inside isolated Docker sandboxes.",
+        "tags": [
+            "React",
+            "TypeScript",
+            "Node.js",
+            "Docker",
+            "Socket-io",
+            "TailwindCSS",
+            "AI-Agents"
+        ],
+        "date": "2026-05-22",
+        "url": "https://github.com/PythonicVarun/remote-coding-agents",
+        "github": "https://github.com/PythonicVarun/remote-coding-agents"
+    },
+    {
+        "status": "published",
+        "icon": "🎬",
+        "title": "Motion.dev MCP Evaluation",
+        "desc": "A comparative evaluation framework assessing the speed, implementation accuracy, and prompting strategies of AI agents (Claude Code, Codex, Gemini CLI, OpenCode Minimax) building interactive UI animations using the Model Context Protocol (MCP) and Motion.dev.",
+        "tags": [
+            "React",
+            "Vite",
+            "TypeScript",
+            "Motion.dev",
+            "Model-Context-Protocol",
+            "Benchmark",
+            "AI-Evaluation"
+        ],
+        "date": "2026-05-25",
+        "url": "https://pythonicvarun.github.io/motion-dev-mcp-poc/",
+        "github": "https://github.com/PythonicVarun/motion-dev-mcp-poc"
+    },
+    {
+        "status": "published",
+        "icon": "🧠",
+        "title": "Serverless LLM Agent Platform",
+        "desc": "A serverless proof-of-concept for an autonomous, multi-tool LLM agent interface running as a Cloudflare Workers Site, featuring chat persistence, setting configurations, and responsive workspace layout.",
+        "tags": [
+            "LLM",
+            "AI-Agents",
+            "Cloudflare-Workers",
+            "Bootstrap",
+            "Wrangler",
+            "Serverless",
+            "TypeScript"
+        ],
+        "date": "2025-08-24",
+        "url": "https://github.com/PythonicVarun/LLM-Agent-POC",
+        "github": "https://github.com/PythonicVarun/LLM-Agent-POC"
+    },
+    {
+        "status": "published",
+        "icon": "📽️",
+        "title": "AI PowerPoint Generator",
+        "desc": "An AI-powered web application that designs and auto-generates styled PowerPoint presentations from text inputs, featuring template-based layouts, LLM-based template suggestions, and slide previews.",
+        "tags": [
+            "Next.js",
+            "FastAPI",
+            "TailwindCSS",
+            "python-pptx",
+            "LLM",
+            "React",
+            "TypeScript",
+            "Python",
+            "Shadcn-ui"
+        ],
+        "date": "2025-08-26",
+        "url": "https://github.com/PythonicVarun/PPT-Generator",
+        "github": "https://github.com/PythonicVarun/PPT-Generator"
     }
 ]
