@@ -1,0 +1,22 @@
+[
+    {
+        "id": "EXP-001",
+        "status": "published",
+        "icon": "💣",
+        "title": "LLM Minesweeper Benchmark",
+        "desc": "Can Gemini 2.0 Flash play Minesweeper on a real Android device via ADB and uiautomator2? Step-by-step game replays with findings on vision-driven mobile automation.",
+        "tags": ["LLM", "Vision", "Android", "ADB", "Gemini", "Benchmark"],
+        "date": "2026-06-17",
+        "url": "./llm-minesweeper/"
+    },
+    {
+        "id": "EXP-002",
+        "status": "wip",
+        "icon": "🔬",
+        "title": "Next experiment",
+        "desc": "Another experiment is cooking. Check back soon, or watch the repo for commits.",
+        "tags": ["TBD"],
+        "date": "",
+        "url": ""
+    }
+]
