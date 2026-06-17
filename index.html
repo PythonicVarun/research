@@ -1362,6 +1362,19 @@
                         </select>
                     </div>
 
+                    <div class="filter-select-wrapper">
+                        <select
+                            id="sortFilter"
+                            class="filter-select"
+                            aria-label="Sort experiments"
+                        >
+                            <option value="date-desc">Newest First</option>
+                            <option value="date-asc">Oldest First</option>
+                            <option value="commits-desc">Most Commits</option>
+                            <option value="title-asc">Alphabetical A-Z</option>
+                        </select>
+                    </div>
+
                     <button
                         id="resetFilters"
                         class="filter-reset-btn"
@@ -1464,15 +1477,17 @@
             });
 
             // ===== SEARCH & FILTER LOGIC =====
+            let allExperiments = [];
+            const selectedTags = new Set();
+
             const searchQuery = document.getElementById("searchQuery");
             const monthFilter = document.getElementById("monthFilter");
+            const sortFilter = document.getElementById("sortFilter");
             const resetBtn = document.getElementById("resetFilters");
             const totalCount = document.getElementById("totalCount");
             const tagsContainer = document.getElementById(
                 "tagsFilterContainer",
             );
-
-            const selectedTags = new Set();
 
             function formatMonth(dateStr) {
                 if (!dateStr) return "—";
@@ -1503,13 +1518,11 @@
                 tagsContainer.innerHTML = "";
                 selectedTags.clear();
 
-                const cards = document.querySelectorAll(
-                    ".exp-card:not(.placeholder)",
-                );
                 const allTags = new Set();
-                cards.forEach((card) => {
-                    const tags = card.querySelectorAll(".tag");
-                    tags.forEach((t) => allTags.add(t.textContent.trim()));
+                allExperiments.forEach((item) => {
+                    if (item.tags) {
+                        item.tags.forEach((tag) => allTags.add(tag.trim()));
+                    }
                 });
 
                 // Render tag pills
@@ -1527,100 +1540,82 @@
                                 selectedTags.add(tag);
                                 tagBtn.classList.add("active");
                             }
-                            filterProjects();
+                            updateExperimentsView();
                         });
                         tagsContainer.appendChild(tagBtn);
                     });
             }
 
-            function filterProjects() {
+            function updateExperimentsView() {
+                const container = document.querySelector(".experiments");
+                if (!container) return;
+
+                container.innerHTML = "";
+
                 const query = searchQuery.value.toLowerCase().trim();
                 const selectedMonth = monthFilter.value;
+                const currentSort = sortFilter.value;
 
-                const cards = document.querySelectorAll(
-                    ".exp-card:not(.placeholder)",
-                );
-                const placeholders = document.querySelectorAll(
-                    ".exp-card.placeholder",
-                );
-
-                let visibleCount = 0;
                 const filtersActive =
                     query !== "" ||
                     selectedMonth !== "all" ||
                     selectedTags.size > 0;
 
-                cards.forEach((card) => {
-                    const cardDateStr = card.getAttribute("data-date") || "";
-                    const title = card
-                        .querySelector(".exp-title")
-                        .textContent.toLowerCase();
-                    const desc = card
-                        .querySelector(".exp-desc")
-                        .textContent.toLowerCase();
-                    const cardTags = Array.from(
-                        card.querySelectorAll(".tag"),
-                    ).map((t) => t.textContent.trim());
-                    const id = card
-                        .querySelector(".exp-id")
-                        .textContent.toLowerCase();
+                // 1. Filter
+                let filtered = allExperiments.filter((item) => {
+                    const title = item.title.toLowerCase();
+                    const desc = item.desc.toLowerCase();
+                    const idStr = item.idStr.toLowerCase();
+                    const cardTags = item.tags || [];
 
-                    // Search match (title, description, tags, id)
                     const matchesSearch =
                         query === "" ||
                         title.includes(query) ||
                         desc.includes(query) ||
-                        id.includes(query) ||
+                        idStr.includes(query) ||
                         cardTags.some((tag) =>
                             tag.toLowerCase().includes(query),
                         );
 
-                    // Month match
-                    const [, month] = cardDateStr.split("-");
+                    const [, month] = (item.date || "").split("-");
                     const matchesMonth =
                         selectedMonth === "all" || month === selectedMonth;
 
-                    // Tags match (must match all selected tags)
                     const matchesTags = Array.from(selectedTags).every((tag) =>
                         cardTags.includes(tag),
                     );
 
-                    if (matchesSearch && matchesMonth && matchesTags) {
-                        card.style.display = "flex";
-                        visibleCount++;
-                    } else {
-                        card.style.display = "none";
-                    }
+                    return matchesSearch && matchesMonth && matchesTags;
                 });
 
-                placeholders.forEach((placeholder) => {
-                    placeholder.style.display = filtersActive ? "none" : "flex";
-                });
-
-                if (filtersActive) {
-                    totalCount.textContent = `${visibleCount} matching`;
-                } else {
-                    totalCount.textContent = `${cards.length} total`;
-                }
-            }
-
-            function renderExperiments(data) {
-                const container = document.querySelector(".experiments");
-                container.innerHTML = "";
-
-                // Sort published experiments date-wise (latest to last)
-                const published = data
-                    .filter((item) => item.status === "published")
-                    .sort((a, b) => {
+                // 2. Sort
+                if (currentSort === "date-desc") {
+                    filtered.sort((a, b) => {
                         if (a.date < b.date) return 1;
                         if (a.date > b.date) return -1;
-                        return 0;
+                        return a.title.localeCompare(b.title);
                     });
+                } else if (currentSort === "date-asc") {
+                    filtered.sort((a, b) => {
+                        if (a.date < b.date) return -1;
+                        if (a.date > b.date) return 1;
+                        return a.title.localeCompare(b.title);
+                    });
+                } else if (currentSort === "commits-desc") {
+                    filtered.sort((a, b) => {
+                        if (b.commitCount !== a.commitCount) {
+                            return b.commitCount - a.commitCount;
+                        }
+                        if (a.date < b.date) return 1;
+                        if (a.date > b.date) return -1;
+                        return a.title.localeCompare(b.title);
+                    });
+                } else if (currentSort === "title-asc") {
+                    filtered.sort((a, b) => a.title.localeCompare(b.title));
+                }
 
-                published.forEach((item, index) => {
-                    const idNum = index + 1;
-                    const idStr = `EXP-${String(idNum).padStart(3, "0")}`;
-
+                // 3. Render
+                filtered.forEach((item) => {
                     const card = document.createElement("div");
                     card.className = "exp-card";
                     card.setAttribute("data-date", item.date);
@@ -1633,10 +1628,14 @@
                            </a>`
                         : "";
 
+                    const commitCountHtml = item.github
+                        ? ` &nbsp;·&nbsp; ${item.commitCount} commit${item.commitCount === 1 ? "" : "s"}`
+                        : "";
+
                     card.innerHTML = `
                         <div class="exp-top">
                             <div class="exp-top-left">
-                                <span class="exp-id">${idStr}</span>
+                                <span class="exp-id">${item.idStr}</span>
                                 <span class="exp-status status-published">Published</span>
                             </div>
                             ${githubButtonHtml}
@@ -1648,7 +1647,7 @@
                             ${item.tags.map((tag) => `<span class="tag">${tag}</span>`).join("")}
                         </div>
                         <div class="exp-footer">
-                            <span>${formatMonth(item.date)}</span>
+                            <span>${formatMonth(item.date)}${commitCountHtml}</span>
                             <span class="exp-cta">View report <span class="exp-cta-arrow">→</span></span>
                         </div>
                     `;
@@ -1663,52 +1662,101 @@
                     container.appendChild(card);
                 });
 
-                // Always append the "Coming soon" WIP placeholder card at the end
-                const wipCard = document.createElement("div");
-                wipCard.className = "exp-card placeholder";
-                const wipIdNum = published.length + 1;
-                const wipIdStr = `EXP-${String(wipIdNum).padStart(3, "0")}`;
+                // Always append the "Coming soon" WIP placeholder card at the end if filters are not active
+                if (!filtersActive) {
+                    const wipCard = document.createElement("div");
+                    wipCard.className = "exp-card placeholder";
+                    const wipIdNum = allExperiments.length + 1;
+                    const wipIdStr = `EXP-${String(wipIdNum).padStart(3, "0")}`;
 
-                wipCard.innerHTML = `
-                    <div class="exp-top">
-                        <div class="exp-top-left">
-                            <span class="exp-id">${wipIdStr}</span>
-                            <span class="exp-status status-wip">Coming soon</span>
+                    wipCard.innerHTML = `
+                        <div class="exp-top">
+                            <div class="exp-top-left">
+                                <span class="exp-id">${wipIdStr}</span>
+                                <span class="exp-status status-wip">Coming soon</span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="exp-icon">🔬</div>
-                    <div class="exp-title">Next experiment</div>
-                    <div class="exp-desc">Another experiment is cooking. Check back soon, or watch the repo for commits.</div>
-                    <div class="exp-tags">
-                        <span class="tag">TBD</span>
-                    </div>
-                    <div class="exp-footer">
-                        <span>—</span>
-                    </div>
-                `;
-                container.appendChild(wipCard);
+                        <div class="exp-icon">🔬</div>
+                        <div class="exp-title">Next experiment</div>
+                        <div class="exp-desc">Another experiment is cooking. Check back soon, or watch the repo for commits.</div>
+                        <div class="exp-tags">
+                            <span class="tag">TBD</span>
+                        </div>
+                        <div class="exp-footer">
+                            <span>—</span>
+                        </div>
+                    `;
+                    container.appendChild(wipCard);
+                }
 
-                // Update counts on load
-                document.getElementById("pubCount").textContent =
-                    published.length;
-
-                // Initialize tags filter options and render initial state
-                initTags();
-                filterProjects();
+                // Update total count label
+                if (filtersActive) {
+                    totalCount.textContent = `${filtered.length} matching`;
+                } else {
+                    totalCount.textContent = `${allExperiments.length} total`;
+                }
             }
 
-            async function loadExperiments() {
+            let commitCounts = {};
+
+            async function initializeAll() {
                 try {
-                    const response = await fetch("experiments.json");
-                    if (!response.ok) {
-                        throw new Error(
-                            `Failed to load experiments.json: ${response.statusText}`,
-                        );
+                    const [expRes, contribRes] = await Promise.allSettled([
+                        fetch("experiments.json"),
+                        fetch("contributions.json"),
+                    ]);
+
+                    let experimentsData = [];
+                    if (expRes.status === "fulfilled" && expRes.value.ok) {
+                        experimentsData = await expRes.value.json();
+                    } else {
+                        throw new Error("Failed to load experiments.json");
                     }
-                    const data = await response.json();
-                    renderExperiments(data);
+
+                    if (
+                        contribRes.status === "fulfilled" &&
+                        contribRes.value.ok
+                    ) {
+                        const contributionsData = await contribRes.value.json();
+                        commitCounts =
+                            contributionsData.repository_commits || {};
+                        renderHeatmap(contributionsData);
+                    } else {
+                        console.warn(
+                            "Failed to load contributions.json; heatmap will be hidden.",
+                        );
+                        const card = document.getElementById("heatmapCard");
+                        if (card) card.style.display = "none";
+                    }
+
+                    // Process experiments: sort newest first initially to assign stable IDs
+                    allExperiments = experimentsData
+                        .filter((item) => item.status === "published")
+                        .sort((a, b) => {
+                            if (a.date < b.date) return 1;
+                            if (a.date > b.date) return -1;
+                            return 0;
+                        });
+
+                    // Assign stable IDs & attach commit counts
+                    allExperiments.forEach((item, index) => {
+                        const idNum = index + 1;
+                        item.idStr = `EXP-${String(idNum).padStart(3, "0")}`;
+
+                        const urlKey = item.github ? item.github.trim() : "";
+                        item.commitCount = commitCounts[urlKey] || 0;
+                    });
+
+                    // Update counts on load
+                    const pubCount = document.getElementById("pubCount");
+                    if (pubCount) {
+                        pubCount.textContent = allExperiments.length;
+                    }
+
+                    initTags();
+                    updateExperimentsView();
                 } catch (error) {
-                    console.error("Error loading experiments:", error);
+                    console.error("Error initializing page:", error);
                     document.querySelector(".experiments").innerHTML =
                         `<div class="error-msg" style="grid-column: 1/-1; text-align: center; color: var(--accent-warn); font-family: var(--font-mono); padding: 40px 0;">
                             Failed to load experiments log.
@@ -1716,17 +1764,19 @@
                 }
             }
 
-            searchQuery.addEventListener("input", filterProjects);
-            monthFilter.addEventListener("change", filterProjects);
+            searchQuery.addEventListener("input", updateExperimentsView);
+            monthFilter.addEventListener("change", updateExperimentsView);
+            sortFilter.addEventListener("change", updateExperimentsView);
 
             resetBtn.addEventListener("click", () => {
                 searchQuery.value = "";
                 monthFilter.value = "all";
+                sortFilter.value = "date-desc";
                 selectedTags.clear();
                 document
                     .querySelectorAll(".tag-filter")
                     .forEach((btn) => btn.classList.remove("active"));
-                filterProjects();
+                updateExperimentsView();
             });
 
             // ===== CONTRIBUTIONS HEATMAP LOGIC =====
@@ -1908,27 +1958,8 @@
                 }
             }
 
-            async function loadContributions() {
-                try {
-                    const response = await fetch("contributions.json");
-                    if (!response.ok) {
-                        throw new Error(
-                            `Failed to load contributions.json: ${response.statusText}`,
-                        );
-                    }
-                    const data = await response.json();
-                    renderHeatmap(data);
-                } catch (error) {
-                    console.error("Error loading contributions:", error);
-                    // Fail silently so the rest of the page still functions fine
-                    const card = document.getElementById("heatmapCard");
-                    if (card) card.style.display = "none";
-                }
-            }
-
             // Initialize on load
-            loadExperiments();
-            loadContributions();
+            initializeAll();
         </script>
     </body>
 </html>
