@@ -33,8 +33,15 @@ jobs:
               with:
                   python-version: "3.12"
 
+            - name: Install minify
+              run: sudo apt-get update && sudo apt-get install -y minify
+
             - name: Inject analytics tracker
               run: python .github/scripts/inject_tracker.py
+
+            - name: Minify static files
+              run: |
+                  find _site -type f \( -name "*.html" -o -name "*.css" -o -name "*.js" -o -name "*.json" \) -exec minify -o {} {} \;
 
             - name: Setup Pages
               uses: actions/configure-pages@v6
