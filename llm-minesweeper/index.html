@@ -999,6 +999,182 @@
                 color: var(--accent-secondary);
             }
 
+            /* ===== PERCEPTION COMPARISON ===== */
+            .perception-grid {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 40px;
+                margin-top: 32px;
+            }
+
+            .perception-case-card {
+                background: var(--gradient-card);
+                background-color: var(--bg-card);
+                border: 1px solid var(--border-color);
+                border-radius: 16px;
+                padding: 32px;
+                display: flex;
+                flex-direction: column;
+                gap: 24px;
+            }
+
+            .perception-case-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 1px solid var(--border-subtle);
+                padding-bottom: 16px;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            .perception-case-header h3 {
+                font-size: 1.25rem;
+                font-weight: 700;
+                margin: 0;
+            }
+
+            .perception-case-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 6px 14px;
+                border-radius: 100px;
+                font-size: 0.76rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                background: rgba(252, 92, 92, 0.12);
+                color: var(--accent-danger);
+                border: 1px solid rgba(252, 92, 92, 0.2);
+            }
+
+            .perception-case-body {
+                display: grid;
+                grid-template-columns: 1fr 1.2fr;
+                gap: 32px;
+            }
+
+            @media (max-width: 992px) {
+                .perception-case-body {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            .perception-visuals {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+            }
+
+            .perception-img-wrapper {
+                position: relative;
+                border-radius: 8px;
+                overflow: hidden;
+                border: 1px solid var(--border-subtle);
+                background: #000000;
+            }
+
+            .perception-img-wrapper img {
+                width: 100%;
+                height: auto;
+                display: block;
+                transition: transform 0.3s ease;
+            }
+
+            .perception-img-wrapper:hover img {
+                transform: scale(1.03);
+            }
+
+            .perception-img-label {
+                position: absolute;
+                bottom: 12px;
+                left: 12px;
+                background: rgba(10, 10, 15, 0.85);
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
+                padding: 4px 10px;
+                border-radius: 4px;
+                font-size: 0.72rem;
+                font-weight: 600;
+                color: #ffffff;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .perception-explanation {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+                justify-content: center;
+            }
+
+            .perception-block {
+                background: var(--bg-secondary);
+                border-left: 3px solid var(--accent-primary);
+                padding: 16px 20px;
+                border-radius: 0 8px 8px 0;
+            }
+
+            .perception-block.danger {
+                border-left-color: var(--accent-danger);
+                background: rgba(252, 92, 92, 0.04);
+            }
+
+            .perception-block-title {
+                font-size: 0.76rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                color: var(--accent-primary);
+                margin-bottom: 6px;
+            }
+
+            .perception-block.danger .perception-block-title {
+                color: var(--accent-danger);
+            }
+
+            .perception-block-text {
+                font-size: 0.92rem;
+                line-height: 1.6;
+                margin: 0;
+                color: var(--text-primary);
+            }
+
+            .perception-block-text code {
+                font-family: var(--font-mono);
+                background: var(--bg-code);
+                padding: 2px 6px;
+                border-radius: 4px;
+                color: var(--accent-tertiary);
+                font-size: 0.85em;
+            }
+
+            .coordinate-mismatch {
+                display: grid;
+                grid-template-columns: auto 1fr;
+                gap: 10px;
+                align-items: center;
+                font-size: 0.88rem;
+                color: var(--text-secondary);
+            }
+
+            .coordinate-mismatch span.marker {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                display: inline-block;
+            }
+
+            .coordinate-mismatch span.marker.expected {
+                background: var(--accent-success);
+                box-shadow: 0 0 8px var(--accent-success);
+            }
+
+            .coordinate-mismatch span.marker.clicked {
+                background: var(--accent-danger);
+                box-shadow: 0 0 8px var(--accent-danger);
+            }
+
             /* ===== RESPONSIVE ===== */
             @media (max-width: 768px) {
                 .hero {
@@ -2107,6 +2283,126 @@
 
         <div class="section-divider"></div>
 
+        <!-- ============ VISUAL PROOF: PERCEPTION GAP ============ -->
+        <section class="section" id="sec-perception">
+            <div class="container">
+                <div class="section-header fade-in">
+                    <span class="section-label">Visual Proof</span>
+                    <h2 class="section-title">The Perception Gap</h2>
+                    <p class="section-desc">
+                        These case studies visually prove the core hypothesis: the model's logical deductions were correct, but its spatial perception and coordinate mapping were flawed.
+                    </p>
+                </div>
+
+                <div class="perception-grid">
+                    <!-- Case Study 1 -->
+                    <div class="perception-case-card fade-in">
+                        <div class="perception-case-header">
+                            <h3>Case 1: Click Coordinate Shift</h3>
+                            <span class="perception-case-badge">Game 3 · Step 11</span>
+                        </div>
+                        <div class="perception-case-body">
+                            <div class="perception-visuals">
+                                <div class="perception-img-wrapper" title="Hover to see the result!">
+                                    <img src="./runs/run_1781618466/step_11_crop.png" alt="Game 3 Step 11 Crop" />
+                                    <div class="perception-img-label">Step 11 (Grid)</div>
+                                </div>
+                                <div class="perception-img-wrapper" title="The explosion cell">
+                                    <img src="./runs/run_1781618466/step_12_crop.png" alt="Game 3 Step 12 Crop" />
+                                    <div class="perception-img-label">Step 12 (Mine)</div>
+                                </div>
+                            </div>
+                            <div class="perception-explanation">
+                                <div class="perception-block">
+                                    <div class="perception-block-title">The Sound Reasoning</div>
+                                    <p class="perception-block-text">
+                                        The model correctly deduced that <code>Row 9, Column 2</code> was safe because the adjacent '1' at Row 10, Column 3 was already satisfied by a mine at Row 10, Column 2.
+                                    </p>
+                                </div>
+                                <div class="perception-block danger">
+                                    <div class="perception-block-title">The Perception Shift</div>
+                                    <p class="perception-block-text">
+                                        Instead of outputting the correct coordinate of <code>(150, 1050)</code> for Row 9, the model mapped Row 9 to <code>y=950</code>, which is actually <strong>Row 8</strong>. By calling <code>tap(150, 950)</code>, it clicked the wrong row, hitting a mine and triggering an immediate Game Over.
+                                    </p>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+                                    <div class="coordinate-mismatch">
+                                        <span class="marker expected"></span>
+                                        <div><strong>Logical Target:</strong> Row 9, Col 2 &rarr; <code>(150, 1050)</code></div>
+                                    </div>
+                                    <div class="coordinate-mismatch">
+                                        <span class="marker clicked"></span>
+                                        <div><strong>Clicked Coordinate:</strong> Row 8, Col 2 &rarr; <code>(150, 950)</code> (Mine!)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Case Study 2 -->
+                    <div class="perception-case-card fade-in">
+                        <div class="perception-case-header">
+                            <h3>Case 2: Screen Edge Blindspot</h3>
+                            <span class="perception-case-badge">Game 2 · Step 15</span>
+                        </div>
+                        <div class="perception-case-body">
+                            <div class="perception-visuals">
+                                <div class="perception-img-wrapper" title="Hover to see the result!">
+                                    <img src="./runs/run_1781616187/step_15_crop.png" alt="Game 2 Step 15 Crop" />
+                                    <div class="perception-img-label">Step 15 (Grid)</div>
+                                </div>
+                                <div class="perception-img-wrapper" title="The explosion cell">
+                                    <img src="./runs/run_1781616187/step_16_crop.png" alt="Game 2 Step 16 Crop" />
+                                    <div class="perception-img-label">Step 16 (Mine)</div>
+                                </div>
+                            </div>
+                            <div class="perception-explanation">
+                                <div class="perception-block">
+                                    <div class="perception-block-title">The Flawed Logic & Visual Misread</div>
+                                    <p class="perception-block-text">
+                                        The model based its logic on a 1-1 pattern between <code>C10, R19 (1)</code> and <code>C9, R19 (1)</code>. However, look closely at the crop: <strong>C9, R19 contains a green "2"</strong>, not a "1"! The actual "1" was at <strong>C11, R19</strong>. Because it misread C9 as "1", its logical deduction was mathematically flawed from the start.
+                                    </p>
+                                </div>
+                                <div class="perception-block danger">
+                                    <div class="perception-block-title">The Double Irony: Safe Deduction, Wrong Click</div>
+                                    <p class="perception-block-text">
+                                        Here lies a double irony: despite its flawed logic, the model <strong>magically arrived at a correct conclusion</strong>—<code>C8, R20</code> actually was safe (mine-free in reality, as revealed on game-over!). Yet, it still failed: it mapped Row 20 to <code>y=1950</code> instead of <code>y=2050</code>. By calling <code>tap(750, 1950)</code>, it clicked the wrong row (<code>C8, R19</code>), hitting a mine and triggering the explosion anyway.
+                                    </p>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+                                    <div class="coordinate-mismatch">
+                                        <span class="marker expected" style="background: var(--accent-success); box-shadow: 0 0 8px var(--accent-success);"></span>
+                                        <div><strong>C9, R19 Value:</strong> Hallucinated <code>1</code> (Actually <code>2</code>)</div>
+                                    </div>
+                                    <div class="coordinate-mismatch">
+                                        <span class="marker expected" style="background: var(--accent-secondary); box-shadow: 0 0 8px var(--accent-secondary);"></span>
+                                        <div><strong>C8, R20 Target:</strong> Safe logical target &rarr; <code>(750, 2050)</code> (Actually Safe!)</div>
+                                    </div>
+                                    <div class="coordinate-mismatch">
+                                        <span class="marker clicked"></span>
+                                        <div><strong>Clicked Coordinate:</strong> C8, R19 &rarr; <code>(750, 1950)</code> (Mine!)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Case Study 3 Callout -->
+                <div class="context-banner fade-in" style="margin-top: 40px;">
+                    <span class="banner-icon">📝</span>
+                    <div class="banner-content">
+                        <h4>Case Study 3: Cognitive Overload & Spillage (Game 2, Step 13)</h4>
+                        <p>
+                            In Game 2 Step 13, the model became so overwhelmed trying to parse the red coordinate numbers that its reasoning began using raw coordinates as cell indices. It wrote: <code>"C2, R1400-1500 is a mine because C2, R1300-1400 is 1..."</code> instead of mapping to logical row numbers. This highlights that overlaying visual grids causes severe cognitive strain, leading the model to spill raw coordinate labels directly into its deductive rules.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
         <!-- ============ RESULTS ============ -->
         <section class="section" id="sec-results">
             <div class="container">
@@ -2643,6 +2939,7 @@
                 "sec-ui",
                 "sec-replays",
                 "sec-reasoning",
+                "sec-perception",
                 "sec-results",
                 "sec-findings",
                 "sec-system",
@@ -2655,6 +2952,7 @@
                 "sec-ui": "UI Comparison",
                 "sec-replays": "Replays",
                 "sec-reasoning": "Model Reasoning",
+                "sec-perception": "Perception Failures",
                 "sec-results": "Results Summary",
                 "sec-findings": "Key Takeaways",
                 "sec-system": "System & Tools",
