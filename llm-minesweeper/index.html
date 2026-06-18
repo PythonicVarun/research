@@ -1342,6 +1342,247 @@
 
         <div class="section-divider"></div>
 
+        <!-- ============ GAME REPLAYS ============ -->
+        <section class="section" id="sec-replays">
+            <div class="container">
+                <div class="section-header fade-in">
+                    <span class="section-label">Game Replays</span>
+                    <h2 class="section-title">Watch the Games Unfold</h2>
+                    <p class="section-desc">
+                        Step through each game as the model played it. Use the
+                        controls to navigate, or hit play for an auto-advancing
+                        slideshow.
+                    </p>
+                </div>
+
+                <div class="replays-grid fade-in">
+                    <!-- Game 1 -->
+                    <div class="replay-card" id="replay-1">
+                        <div class="replay-header">
+                            <h3>Game 1</h3>
+                            <span class="game-result lost">💥 Lost</span>
+                        </div>
+                        <div class="replay-viewer">
+                            <img
+                                id="replay1-img"
+                                src="./runs/run_1781509310/step_0_screenshot.png"
+                                alt="Game 1 replay"
+                                loading="lazy"
+                            />
+                            <div
+                                class="autoplay-indicator"
+                                id="replay1-autoplay"
+                            >
+                                ▶ AUTO
+                            </div>
+                        </div>
+                        <div class="replay-buttons-container">
+                            <button
+                                class="replay-btn"
+                                onclick="replayStep('replay1', -1)"
+                                aria-label="Previous step"
+                            >
+                                ◀
+                            </button>
+                            <button
+                                class="replay-btn play-btn"
+                                id="replay1-play"
+                                onclick="toggleAutoplay('replay1')"
+                                aria-label="Auto play"
+                            >
+                                ▶
+                            </button>
+                            <button
+                                class="replay-btn"
+                                onclick="replayStep('replay1', 1)"
+                                aria-label="Next step"
+                            >
+                                ▶
+                            </button>
+                        </div>
+                        <div class="replay-progress-container">
+                            <input
+                                type="range"
+                                class="replay-slider"
+                                id="replay1-slider"
+                                min="0"
+                                max="18"
+                                value="0"
+                                oninput="replaySlide('replay1', this.value)"
+                            />
+                            <span class="replay-progress" id="replay1-progress">
+                                0 / 18
+                            </span>
+                        </div>
+                        <div class="replay-meta">
+                            <div class="replay-meta-item">
+                                Steps: <span>19</span>
+                            </div>
+                            <div class="replay-meta-item">
+                                Duration: <span>~23 min</span>
+                            </div>
+                            <div class="replay-meta-item">
+                                Board: <span>Classic UI</span>
+                            </div>
+                            <div class="replay-meta-item">
+                                Mines: <span>38</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Game 2 -->
+                    <div class="replay-card" id="replay-2">
+                        <div class="replay-header">
+                            <h3>Game 2</h3>
+                            <span class="game-result lost">💥 Lost</span>
+                        </div>
+                        <div class="replay-viewer">
+                            <img
+                                id="replay2-img"
+                                src="./runs/run_1781616187/step_0_screenshot.png"
+                                alt="Game 2 replay"
+                                loading="lazy"
+                            />
+                            <div
+                                class="autoplay-indicator"
+                                id="replay2-autoplay"
+                            >
+                                ▶ AUTO
+                            </div>
+                        </div>
+                        <div class="replay-buttons-container">
+                            <button
+                                class="replay-btn"
+                                onclick="replayStep('replay2', -1)"
+                                aria-label="Previous step"
+                            >
+                                ◀
+                            </button>
+                            <button
+                                class="replay-btn play-btn"
+                                id="replay2-play"
+                                onclick="toggleAutoplay('replay2')"
+                                aria-label="Auto play"
+                            >
+                                ▶
+                            </button>
+                            <button
+                                class="replay-btn"
+                                onclick="replayStep('replay2', 1)"
+                                aria-label="Next step"
+                            >
+                                ▶
+                            </button>
+                        </div>
+                        <div class="replay-progress-container">
+                            <input
+                                type="range"
+                                class="replay-slider"
+                                id="replay2-slider"
+                                min="0"
+                                max="16"
+                                value="0"
+                                oninput="replaySlide('replay2', this.value)"
+                            />
+                            <span class="replay-progress" id="replay2-progress">
+                                0 / 16
+                            </span>
+                        </div>
+                        <div class="replay-meta">
+                            <div class="replay-meta-item">
+                                Steps: <span>17</span>
+                            </div>
+                            <div class="replay-meta-item">
+                                Duration: <span>~16 min</span>
+                            </div>
+                            <div class="replay-meta-item">
+                                Board: <span>Classic UI</span>
+                            </div>
+                            <div class="replay-meta-item">
+                                Mines: <span>38</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Game 3 -->
+                    <div class="replay-card" id="replay-3">
+                        <div class="replay-header">
+                            <h3>Game 3</h3>
+                            <span class="game-result lost">💥 Lost</span>
+                        </div>
+                        <div class="replay-viewer">
+                            <img
+                                id="replay3-img"
+                                src="./runs/run_1781618466/step_0_screenshot.png"
+                                alt="Game 3 replay"
+                                loading="lazy"
+                            />
+                            <div
+                                class="autoplay-indicator"
+                                id="replay3-autoplay"
+                            >
+                                ▶ AUTO
+                            </div>
+                        </div>
+                        <div class="replay-buttons-container">
+                            <button
+                                class="replay-btn"
+                                onclick="replayStep('replay3', -1)"
+                                aria-label="Previous step"
+                            >
+                                ◀
+                            </button>
+                            <button
+                                class="replay-btn play-btn"
+                                id="replay3-play"
+                                onclick="toggleAutoplay('replay3')"
+                                aria-label="Auto play"
+                            >
+                                ▶
+                            </button>
+                            <button
+                                class="replay-btn"
+                                onclick="replayStep('replay3', 1)"
+                                aria-label="Next step"
+                            >
+                                ▶
+                            </button>
+                        </div>
+                        <div class="replay-progress-container">
+                            <input
+                                type="range"
+                                class="replay-slider"
+                                id="replay3-slider"
+                                min="0"
+                                max="12"
+                                value="0"
+                                oninput="replaySlide('replay3', this.value)"
+                            />
+                            <span class="replay-progress" id="replay3-progress">
+                                0 / 12
+                            </span>
+                        </div>
+                        <div class="replay-meta">
+                            <div class="replay-meta-item">
+                                Steps: <span>13</span>
+                            </div>
+                            <div class="replay-meta-item">
+                                Duration: <span>~15 min</span>
+                            </div>
+                            <div class="replay-meta-item">
+                                Board: <span>Classic UI</span>
+                            </div>
+                            <div class="replay-meta-item">
+                                Mines: <span>38</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
         <!-- ============ CONTEXT ============ -->
         <section class="section" id="sec-context">
             <div class="container">
@@ -1667,247 +1908,6 @@
                         >
                             ▶ Play Store ↗
                         </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <div class="section-divider"></div>
-
-        <!-- ============ GAME REPLAYS ============ -->
-        <section class="section" id="sec-replays">
-            <div class="container">
-                <div class="section-header fade-in">
-                    <span class="section-label">Game Replays</span>
-                    <h2 class="section-title">Watch the Games Unfold</h2>
-                    <p class="section-desc">
-                        Step through each game as the model played it. Use the
-                        controls to navigate, or hit play for an auto-advancing
-                        slideshow.
-                    </p>
-                </div>
-
-                <div class="replays-grid fade-in">
-                    <!-- Game 1 -->
-                    <div class="replay-card" id="replay-1">
-                        <div class="replay-header">
-                            <h3>Game 1</h3>
-                            <span class="game-result lost">💥 Lost</span>
-                        </div>
-                        <div class="replay-viewer">
-                            <img
-                                id="replay1-img"
-                                src="./runs/run_1781509310/step_0_screenshot.png"
-                                alt="Game 1 replay"
-                                loading="lazy"
-                            />
-                            <div
-                                class="autoplay-indicator"
-                                id="replay1-autoplay"
-                            >
-                                ▶ AUTO
-                            </div>
-                        </div>
-                        <div class="replay-buttons-container">
-                            <button
-                                class="replay-btn"
-                                onclick="replayStep('replay1', -1)"
-                                aria-label="Previous step"
-                            >
-                                ◀
-                            </button>
-                            <button
-                                class="replay-btn play-btn"
-                                id="replay1-play"
-                                onclick="toggleAutoplay('replay1')"
-                                aria-label="Auto play"
-                            >
-                                ▶
-                            </button>
-                            <button
-                                class="replay-btn"
-                                onclick="replayStep('replay1', 1)"
-                                aria-label="Next step"
-                            >
-                                ▶
-                            </button>
-                        </div>
-                        <div class="replay-progress-container">
-                            <input
-                                type="range"
-                                class="replay-slider"
-                                id="replay1-slider"
-                                min="0"
-                                max="18"
-                                value="0"
-                                oninput="replaySlide('replay1', this.value)"
-                            />
-                            <span class="replay-progress" id="replay1-progress">
-                                0 / 18
-                            </span>
-                        </div>
-                        <div class="replay-meta">
-                            <div class="replay-meta-item">
-                                Steps: <span>19</span>
-                            </div>
-                            <div class="replay-meta-item">
-                                Duration: <span>~23 min</span>
-                            </div>
-                            <div class="replay-meta-item">
-                                Board: <span>Classic UI</span>
-                            </div>
-                            <div class="replay-meta-item">
-                                Mines: <span>38</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Game 2 -->
-                    <div class="replay-card" id="replay-2">
-                        <div class="replay-header">
-                            <h3>Game 2</h3>
-                            <span class="game-result lost">💥 Lost</span>
-                        </div>
-                        <div class="replay-viewer">
-                            <img
-                                id="replay2-img"
-                                src="./runs/run_1781616187/step_0_screenshot.png"
-                                alt="Game 2 replay"
-                                loading="lazy"
-                            />
-                            <div
-                                class="autoplay-indicator"
-                                id="replay2-autoplay"
-                            >
-                                ▶ AUTO
-                            </div>
-                        </div>
-                        <div class="replay-buttons-container">
-                            <button
-                                class="replay-btn"
-                                onclick="replayStep('replay2', -1)"
-                                aria-label="Previous step"
-                            >
-                                ◀
-                            </button>
-                            <button
-                                class="replay-btn play-btn"
-                                id="replay2-play"
-                                onclick="toggleAutoplay('replay2')"
-                                aria-label="Auto play"
-                            >
-                                ▶
-                            </button>
-                            <button
-                                class="replay-btn"
-                                onclick="replayStep('replay2', 1)"
-                                aria-label="Next step"
-                            >
-                                ▶
-                            </button>
-                        </div>
-                        <div class="replay-progress-container">
-                            <input
-                                type="range"
-                                class="replay-slider"
-                                id="replay2-slider"
-                                min="0"
-                                max="16"
-                                value="0"
-                                oninput="replaySlide('replay2', this.value)"
-                            />
-                            <span class="replay-progress" id="replay2-progress">
-                                0 / 16
-                            </span>
-                        </div>
-                        <div class="replay-meta">
-                            <div class="replay-meta-item">
-                                Steps: <span>17</span>
-                            </div>
-                            <div class="replay-meta-item">
-                                Duration: <span>~16 min</span>
-                            </div>
-                            <div class="replay-meta-item">
-                                Board: <span>Classic UI</span>
-                            </div>
-                            <div class="replay-meta-item">
-                                Mines: <span>38</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Game 3 -->
-                    <div class="replay-card" id="replay-3">
-                        <div class="replay-header">
-                            <h3>Game 3</h3>
-                            <span class="game-result lost">💥 Lost</span>
-                        </div>
-                        <div class="replay-viewer">
-                            <img
-                                id="replay3-img"
-                                src="./runs/run_1781618466/step_0_screenshot.png"
-                                alt="Game 3 replay"
-                                loading="lazy"
-                            />
-                            <div
-                                class="autoplay-indicator"
-                                id="replay3-autoplay"
-                            >
-                                ▶ AUTO
-                            </div>
-                        </div>
-                        <div class="replay-buttons-container">
-                            <button
-                                class="replay-btn"
-                                onclick="replayStep('replay3', -1)"
-                                aria-label="Previous step"
-                            >
-                                ◀
-                            </button>
-                            <button
-                                class="replay-btn play-btn"
-                                id="replay3-play"
-                                onclick="toggleAutoplay('replay3')"
-                                aria-label="Auto play"
-                            >
-                                ▶
-                            </button>
-                            <button
-                                class="replay-btn"
-                                onclick="replayStep('replay3', 1)"
-                                aria-label="Next step"
-                            >
-                                ▶
-                            </button>
-                        </div>
-                        <div class="replay-progress-container">
-                            <input
-                                type="range"
-                                class="replay-slider"
-                                id="replay3-slider"
-                                min="0"
-                                max="12"
-                                value="0"
-                                oninput="replaySlide('replay3', this.value)"
-                            />
-                            <span class="replay-progress" id="replay3-progress">
-                                0 / 12
-                            </span>
-                        </div>
-                        <div class="replay-meta">
-                            <div class="replay-meta-item">
-                                Steps: <span>13</span>
-                            </div>
-                            <div class="replay-meta-item">
-                                Duration: <span>~15 min</span>
-                            </div>
-                            <div class="replay-meta-item">
-                                Board: <span>Classic UI</span>
-                            </div>
-                            <div class="replay-meta-item">
-                                Mines: <span>38</span>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
