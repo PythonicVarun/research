@@ -45,3 +45,7 @@ jobs:
         needs: update-contributions
         if: needs.update-contributions.outputs.commit_made == 'true'
         uses: ./.github/workflows/deploy.yml
+        permissions:
+            contents: read
+            pages: write
+            id-token: write
