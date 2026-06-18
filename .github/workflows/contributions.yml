@@ -28,6 +28,7 @@ jobs:
               run: python .github/scripts/generate_contributions.py
 
             - name: Commit and push changes
+              id: commit_step
               run: |
                   git config --local user.email "github-actions[bot]@users.noreply.github.com"
                   git config --local user.name "github-actions[bot]"
