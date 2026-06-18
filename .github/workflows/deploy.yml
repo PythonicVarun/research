@@ -4,6 +4,7 @@ on:
     push:
         branches:
             - master
+    workflow_call:
     workflow_dispatch:
 
 permissions:
@@ -22,6 +23,7 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v6
               with:
+                  ref: master
                   fetch-depth: 1
                   submodules: recursive
 

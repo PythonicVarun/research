@@ -2,8 +2,8 @@ name: Generate Contributions Heatmap
 
 on:
     schedule:
-        # Runs daily at midnight IST
-        - cron: "30 18 * * *"
+        - cron: "0 0 * * *"
+          timezone: "Asia/Kolkata"
     workflow_dispatch:
 
 jobs:
@@ -11,6 +11,8 @@ jobs:
         runs-on: ubuntu-latest
         permissions:
             contents: write
+        outputs:
+            commit_made: ${{ steps.commit_step.outputs.changes_made }}
         steps:
             - name: Checkout repository
               uses: actions/checkout@v6
@@ -32,7 +34,14 @@ jobs:
                   git add contributions.json
                   if git diff --staged --quiet; then
                     echo "No changes in contributions.json. Skipping commit."
+                    echo "changes_made=false" >> "$GITHUB_OUTPUT"
                   else
                     git commit -m "chore: update contributions.json"
                     git push
+                    echo "changes_made=true" >> "$GITHUB_OUTPUT"
                   fi
+
+    deploy:
+        needs: update-contributions
+        if: needs.update-contributions.outputs.commit_made == 'true'
+        uses: ./.github/workflows/deploy.yml
