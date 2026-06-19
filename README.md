@@ -1,4 +1,4 @@
-# Research & Experiments - Varun Agnihotri
+# Research & Experiments
 
 This repository serves as a container for my active machine learning, LLM, and computer vision experiments.
 
