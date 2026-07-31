@@ -769,6 +769,48 @@
                 color: var(--accent-3);
             }
 
+            .filter-date-wrapper {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                background-color: var(--bg-card);
+                border: 1px solid var(--border-subtle);
+                border-radius: 10px;
+                padding: 0 12px;
+                height: 40px;
+                transition:
+                    border-color 0.2s ease,
+                    background-color 0.2s ease;
+            }
+
+            .filter-date-wrapper:focus-within {
+                border-color: var(--border);
+                background-color: var(--bg-card-hover);
+            }
+
+            .filter-date-label {
+                font-family: var(--font-mono);
+                font-size: 0.72rem;
+                color: var(--text-muted);
+                font-weight: 500;
+                white-space: nowrap;
+            }
+
+            .filter-date {
+                font-family: var(--font-body);
+                font-size: 0.82rem;
+                color: var(--text-secondary);
+                background: transparent;
+                border: none;
+                outline: none;
+                cursor: pointer;
+                color-scheme: dark;
+            }
+
+            html.light-theme .filter-date {
+                color-scheme: light;
+            }
+
             /* ===== TAG FILTERS ===== */
             .tags-filter-bar {
                 display: flex;
@@ -808,11 +850,13 @@
                     flex: 1 1 100%;
                 }
 
-                .filter-select-wrapper {
+                .filter-select-wrapper,
+                .filter-date-wrapper {
                     flex: 1;
                 }
 
-                .filter-select {
+                .filter-select,
+                .filter-date {
                     width: 100%;
                 }
 
@@ -1344,6 +1388,30 @@
                         />
                     </div>
 
+                    <div class="filter-date-wrapper">
+                        <label for="fromDate" class="filter-date-label"
+                            >From:</label
+                        >
+                        <input
+                            type="date"
+                            id="fromDate"
+                            class="filter-date"
+                            aria-label="From date filter"
+                        />
+                    </div>
+
+                    <div class="filter-date-wrapper">
+                        <label for="toDate" class="filter-date-label"
+                            >To:</label
+                        >
+                        <input
+                            type="date"
+                            id="toDate"
+                            class="filter-date"
+                            aria-label="To date filter"
+                        />
+                    </div>
+
                     <div class="filter-select-wrapper">
                         <select id="monthFilter" class="filter-select">
                             <option value="all">All Months</option>
@@ -1481,6 +1549,8 @@
             const selectedTags = new Set();
 
             const searchQuery = document.getElementById("searchQuery");
+            const fromDateInput = document.getElementById("fromDate");
+            const toDateInput = document.getElementById("toDate");
             const monthFilter = document.getElementById("monthFilter");
             const sortFilter = document.getElementById("sortFilter");
             const resetBtn = document.getElementById("resetFilters");
@@ -1488,6 +1558,62 @@
             const tagsContainer = document.getElementById(
                 "tagsFilterContainer",
             );
+
+            function parseQueryParams() {
+                const params = new URLSearchParams(window.location.search);
+                if (params.has("from")) {
+                    fromDateInput.value = params.get("from");
+                }
+                if (params.has("to")) {
+                    toDateInput.value = params.get("to");
+                }
+                if (params.has("search")) {
+                    searchQuery.value = params.get("search");
+                }
+                if (params.has("month")) {
+                    monthFilter.value = params.get("month");
+                }
+                if (params.has("sort")) {
+                    sortFilter.value = params.get("sort");
+                }
+            }
+
+            function updateQueryParams() {
+                const params = new URLSearchParams();
+                if (fromDateInput.value)
+                    params.set("from", fromDateInput.value);
+                if (toDateInput.value) params.set("to", toDateInput.value);
+                if (searchQuery.value.trim())
+                    params.set("search", searchQuery.value.trim());
+                if (monthFilter.value !== "all")
+                    params.set("month", monthFilter.value);
+                if (sortFilter.value !== "date-desc")
+                    params.set("sort", sortFilter.value);
+
+                const newUrl = params.toString()
+                    ? `${window.location.pathname}?${params.toString()}`
+                    : window.location.pathname;
+                window.history.replaceState({}, "", newUrl);
+            }
+
+            function normalizeDateStr(str, isEnd = false) {
+                if (!str) return null;
+                const trimmed = str.trim();
+                if (/^\d{4}$/.test(trimmed)) {
+                    return isEnd ? `${trimmed}-12-31` : `${trimmed}-01-01`;
+                }
+                if (/^\d{4}-\d{2}$/.test(trimmed)) {
+                    return isEnd ? `${trimmed}-31` : `${trimmed}-01`;
+                }
+                if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+                    return trimmed;
+                }
+                const d = new Date(trimmed);
+                if (!isNaN(d.getTime())) {
+                    return d.toISOString().split("T")[0];
+                }
+                return trimmed;
+            }
 
             function formatMonth(dateStr) {
                 if (!dateStr) return "—";
@@ -1555,11 +1681,15 @@
                 const query = searchQuery.value.toLowerCase().trim();
                 const selectedMonth = monthFilter.value;
                 const currentSort = sortFilter.value;
+                const fromVal = normalizeDateStr(fromDateInput.value, false);
+                const toVal = normalizeDateStr(toDateInput.value, true);
 
                 const filtersActive =
                     query !== "" ||
                     selectedMonth !== "all" ||
-                    selectedTags.size > 0;
+                    selectedTags.size > 0 ||
+                    Boolean(fromVal) ||
+                    Boolean(toVal);
 
                 // 1. Filter
                 let filtered = allExperiments.filter((item) => {
@@ -1585,7 +1715,16 @@
                         cardTags.includes(tag),
                     );
 
-                    return matchesSearch && matchesMonth && matchesTags;
+                    const matchesFrom = !fromVal || item.date >= fromVal;
+                    const matchesTo = !toVal || item.date <= toVal;
+
+                    return (
+                        matchesSearch &&
+                        matchesMonth &&
+                        matchesTags &&
+                        matchesFrom &&
+                        matchesTo
+                    );
                 });
 
                 // 2. Sort
@@ -1754,6 +1893,7 @@
                     }
 
                     initTags();
+                    parseQueryParams();
                     updateExperimentsView();
                 } catch (error) {
                     console.error("Error initializing page:", error);
@@ -1764,18 +1904,43 @@
                 }
             }
 
-            searchQuery.addEventListener("input", updateExperimentsView);
-            monthFilter.addEventListener("change", updateExperimentsView);
-            sortFilter.addEventListener("change", updateExperimentsView);
+            searchQuery.addEventListener("input", () => {
+                updateQueryParams();
+                updateExperimentsView();
+            });
+            monthFilter.addEventListener("change", () => {
+                updateQueryParams();
+                updateExperimentsView();
+            });
+            sortFilter.addEventListener("change", () => {
+                updateQueryParams();
+                updateExperimentsView();
+            });
+            fromDateInput.addEventListener("change", () => {
+                updateQueryParams();
+                updateExperimentsView();
+            });
+            toDateInput.addEventListener("change", () => {
+                updateQueryParams();
+                updateExperimentsView();
+            });
+
+            window.addEventListener("popstate", () => {
+                parseQueryParams();
+                updateExperimentsView();
+            });
 
             resetBtn.addEventListener("click", () => {
                 searchQuery.value = "";
+                fromDateInput.value = "";
+                toDateInput.value = "";
                 monthFilter.value = "all";
                 sortFilter.value = "date-desc";
                 selectedTags.clear();
                 document
                     .querySelectorAll(".tag-filter")
                     .forEach((btn) => btn.classList.remove("active"));
+                updateQueryParams();
                 updateExperimentsView();
             });
 
