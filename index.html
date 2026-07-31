@@ -1868,13 +1868,13 @@
                         if (card) card.style.display = "none";
                     }
 
-                    // Process experiments: sort newest first initially to assign stable IDs
+                    // Process experiments: sort oldest first initially to assign ascending stable IDs
                     allExperiments = experimentsData
                         .filter((item) => item.status === "published")
                         .sort((a, b) => {
-                            if (a.date < b.date) return 1;
-                            if (a.date > b.date) return -1;
-                            return 0;
+                            if (a.date < b.date) return -1;
+                            if (a.date > b.date) return 1;
+                            return a.title.localeCompare(b.title);
                         });
 
                     // Assign stable IDs & attach commit counts
